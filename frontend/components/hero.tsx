@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { Button } from "@/app/ui/button";
+import { Button } from "@/components/ui/button";
 import { Github } from "lucide-react";
 import gsap from "gsap";
 

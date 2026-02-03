@@ -6,8 +6,8 @@ import {
   Compass,
   CheckCircle,
 } from "lucide-react";
-import { PainPointCard } from "../ui/painpointcard";
-import { SolutionCard } from "../ui/solutioncard";
+import { PainPointCard } from "./ui/painpointcard";
+import { SolutionCard } from "./ui/solutioncard";
 
 export default function WhyThisMattersSection() {
   return (
