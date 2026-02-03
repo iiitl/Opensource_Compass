@@ -4,16 +4,18 @@ import (
 	"log"
 	"net/http"
 
+	"core-service/config"
 	"core-service/routes"
 )
 
 func main() {
+	cfg := config.Load()
 	mux := http.NewServeMux()
 
 	routes.RegisterHealthRoutes(mux)
 
-	log.Println("Core service running on :8080")
-	err := http.ListenAndServe(":8080", mux)
+	log.Printf("Core service running on :%s\n", cfg.ServerPort)
+	err := http.ListenAndServe(":"+cfg.ServerPort, mux)
 	if err != nil {
 		log.Fatal(err)
 	}
