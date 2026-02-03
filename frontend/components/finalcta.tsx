@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "../ui/button";
+import { Button } from "./ui/button";
 import { Github } from "lucide-react";
 
 export default function FinalCTASection() {

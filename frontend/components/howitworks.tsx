@@ -91,8 +91,8 @@ import {
   FolderGit2,
   GitPullRequest,
 } from "lucide-react";
-import { WorkflowStepCard } from "../ui/tracingbeam";
-import { ArrowConnector } from "../ui/tracingbeam";
+import { WorkflowStepCard } from "./ui/tracingbeam";
+import { ArrowConnector } from "./ui/tracingbeam";
 
 export default function WorkflowSection() {
   return (
