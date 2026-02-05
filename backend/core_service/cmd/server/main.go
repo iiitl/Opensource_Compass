@@ -5,15 +5,25 @@ import (
 	"net/http"
 
 	"core-service/config"
+	"core-service/internal/clients"
 	"core-service/internal/db"
+	"core-service/internal/orchestration"
+	"core-service/internal/preferences"
 	"core-service/routes"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
 	cfg := config.Load()
+	aiClient := clients.NewAIClient(cfg.AISvcURL)
+	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
+
+	var dbPool *pgxpool.Pool
+	var err error
 
 	if cfg.DatabaseURL != "" {
-		_, err := db.Connect(cfg.DatabaseURL)
+		dbPool, err = db.Connect(cfg.DatabaseURL)
 		if err != nil {
 			log.Fatal("Failed to connect to database:", err)
 		}
@@ -22,9 +32,11 @@ func main() {
 	mux := http.NewServeMux()
 	routes.RegisterHealthRoutes(mux)
 
+	prefRepo := preferences.NewRepository(dbPool)
+	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
+
+	routes.RegisterRoutes(mux, orchService)
+
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
-	err := http.ListenAndServe(":"+cfg.ServerPort, mux)
-	if err != nil {
-		log.Fatal(err)
-	}
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
 }
