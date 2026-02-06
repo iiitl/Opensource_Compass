@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
@@ -50,8 +51,10 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 
 	log.Println("Github search query: ", query)
 
-	url := fmt.Sprintf("https://api.github.com/search/repositories?q=%s&sort=stars&order=desc", 
-		url.QueryEscape(query),
+	page := rand.Intn(10) + 1
+
+	url := fmt.Sprintf("https://api.github.com/search/repositories?q=%s&page=%d", 
+		url.QueryEscape(query), page,
 	)
 
 	req, err := http.NewRequest("GET", url, nil)
