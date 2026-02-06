@@ -11,7 +11,7 @@ import { SolutionCard } from "./ui/solutioncard";
 
 export default function WhyThisMattersSection() {
   return (
-    <section className="bg-[#0d1117] text-white py-28">
+    <section id = "approach" className="bg-[#0d1117] text-white py-28">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
