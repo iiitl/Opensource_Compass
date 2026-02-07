@@ -7,6 +7,7 @@ import (
 
 	"core-service/internal/auth"
 	"core-service/internal/orchestration"
+	"core-service/internal/scoring"
 )
 
 type RecommendationHandler struct {
@@ -48,19 +49,42 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 		return
 	}
 
-	topRepo := repos[0]
+	// Try to find a repo with good first issues among the top 5
+	var topRepo string
+	var issues []orchestration.Issue
+	var signals scoring.RepoSignals
+	var rec *orchestration.RepoRecommendation
 
-	signals := h.service.BuildRepoSignals(ctx, topRepo, userCtx)
-
-	rec, err := h.service.ScoreRepositoryForUser(ctx, userCtx, topRepo, signals)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	limit := 5
+	if len(repos) < limit {
+		limit = len(repos)
 	}
 
-	issues, err := h.service.FetchAndEnrichIssues(ctx, topRepo, 3, token)
+	found := false
+	for i := 0; i < limit; i++ {
+		candidateRepo := repos[i]
+
+		// We need to fetch issues to check if there are any
+		candidateIssues, err := h.service.FetchAndEnrichIssues(ctx, candidateRepo, 3, token)
+		if err == nil && len(candidateIssues) > 0 {
+			topRepo = candidateRepo
+			issues = candidateIssues
+			found = true
+			break
+		}
+	}
+
+	// Fallback to first repo if none with issues found
+	if !found {
+		topRepo = repos[0]
+		// issues remains nil or empty
+	}
+
+	signals = h.service.BuildRepoSignals(ctx, topRepo, userCtx)
+
+	rec, err = h.service.ScoreRepositoryForUser(ctx, userCtx, topRepo, signals)
 	if err != nil {
-		http.Error(w, "failed to fetch issues from GitHub service", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
