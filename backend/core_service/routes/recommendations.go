@@ -48,7 +48,7 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 		return
 	}
 
-	topRepo := "nodejs/" + repos[0]
+	topRepo := repos[0]
 
 	signals := h.service.BuildRepoSignals(ctx, topRepo, userCtx)
 

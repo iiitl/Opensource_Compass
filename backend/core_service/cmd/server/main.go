@@ -12,9 +12,11 @@ import (
 	"core-service/routes"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	_ = godotenv.Load()
 	cfg := config.Load()
 	aiClient := clients.NewAIClient(cfg.AISvcURL)
 	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
