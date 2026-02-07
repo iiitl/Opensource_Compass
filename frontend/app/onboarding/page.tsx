@@ -7,16 +7,16 @@ import AuthCard from "./components/authcard";
 import ProgressStepper from "./components/progress";
 import TechSection from "./components/techsection";
 import StickyActionBar from "./components/stickyactionbar";
-import FrameworkSection from "./components/frameworksection";
-import DomainSection from "./components/domainsection";
+import TopicSection from "./components/topicsection";
+import ExperienceSelector from "./components/experienceselector";
 
 
 export default function OnboardingPage() {
     const router = useRouter();
-    const [frameworks, setFrameworks] = useState<string[]>([]);
-    const [domains, setDomains] = useState<string[]>([]);
     const pageRef = useRef<HTMLDivElement>(null);
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
+    const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+    const [experienceLevel, setExperienceLevel] = useState<string>("Beginner");
     
     // Auth state management
     const [isAuth, setIsAuth] = useState(false);
@@ -49,9 +49,15 @@ export default function OnboardingPage() {
 
     const handleContinue = () => {
         // Save preferences to localStorage
+        console.log("Saving to localStorage:", {
+            techStack: selectedLanguages,
+            topics: selectedTopics,
+            experienceLevel: experienceLevel
+        });
+        
         localStorage.setItem("techStack", JSON.stringify(selectedLanguages));
-        localStorage.setItem("frameworks", JSON.stringify(frameworks));
-        localStorage.setItem("domains", JSON.stringify(domains));
+        localStorage.setItem("topics", JSON.stringify(selectedTopics));
+        localStorage.setItem("experienceLevel", experienceLevel);
         
         router.push("/discover");
     };
@@ -63,7 +69,7 @@ export default function OnboardingPage() {
             ref={pageRef}
             className="min-h-screen bg-[#0d1117] text-white flex justify-center pb-24"
         >
-            <div className="w-full max-w-3xl px-6 py-16 space-y-12">
+            <div className="w-full max-w-4xl px-6 py-16 space-y-12">
 
                 {/* Step 1: Auth Card - Only show if NOT authenticated */}
                 {!isAuth && (
@@ -82,7 +88,7 @@ export default function OnboardingPage() {
                         <div className="onboard-animate">
                             <TechSection
                                 title="Programming Languages"
-                                subtitle="Select at least one language you are comfortable with"
+                                subtitle="Select the languages you're comfortable with"
                                 options={[
                                     "JavaScript",
                                     "TypeScript",
@@ -91,21 +97,28 @@ export default function OnboardingPage() {
                                     "Go",
                                     "Rust",
                                     "C++",
+                                    "Ruby",
+                                    "PHP",
+                                    "Swift",
+                                    "Kotlin",
                                 ]}
                                 required
                                 selected={selectedLanguages}
                                 setSelected={setSelectedLanguages}
                             />
-                            <FrameworkSection
-                                selected={frameworks}
-                                setSelected={setFrameworks}
+                        </div>
+
+                        <div className="onboard-animate">
+                            <TopicSection
+                                selected={selectedTopics}
+                                setSelected={setSelectedTopics}
                             />
                         </div>
 
                         <div className="onboard-animate">
-                            <DomainSection
-                                selected={domains}
-                                setSelected={setDomains}
+                            <ExperienceSelector
+                                selected={experienceLevel}
+                                setSelected={setExperienceLevel}
                             />
                         </div>
                     </>
@@ -122,3 +135,4 @@ export default function OnboardingPage() {
         </div>
     );
 }
+
