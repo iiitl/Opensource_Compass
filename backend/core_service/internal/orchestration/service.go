@@ -58,3 +58,7 @@ func (s *Service) ScoreRepositoryForUser(
 		Signals: signals,
 	}, nil
 }
+
+func (s *Service) DBCheck(ctx context.Context) (int, error) {
+	return s.prefRepo.Count(ctx)
+}

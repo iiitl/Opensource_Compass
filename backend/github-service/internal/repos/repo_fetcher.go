@@ -73,6 +73,10 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("github api returned status: %d", resp.StatusCode)
+	}
+
 	var raw struct {
 		Items []struct {
 			FullName        string `json:"full_name"`
