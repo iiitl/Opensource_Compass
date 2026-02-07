@@ -11,3 +11,15 @@ func ExtractLanguages(userCtx *UserContext) []string {
 
 	return langs
 }
+
+func ExtractDomains(userCtx *UserContext) []string {
+	var domains []string
+
+	for _, p := range userCtx.Preferences {
+		if p.PreferenceType == "domain" {
+			domains = append(domains, p.Value)
+		}
+	}
+
+	return domains
+}

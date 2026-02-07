@@ -60,3 +60,9 @@ func (r *Repository) GetByUser(ctx context.Context, userID string) ([]Preference
 
 	return prefs, nil
 }
+
+func (r *Repository) Count(ctx context.Context) (int, error) {
+	var count int
+	err := r.db.QueryRow(ctx, "SELECT COUNT(*) FROM user_preferences").Scan(&count)
+	return count, err
+}

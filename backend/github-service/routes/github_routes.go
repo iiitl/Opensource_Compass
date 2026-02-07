@@ -14,7 +14,7 @@ func RegisterGithubRoutes(router *gin.Engine) {
 	router.GET("/repos/search", func(c *gin.Context) {
 		languagesParam := c.Query("languages")
 		frameworksParam := c.Query("frameworks")
-		domainsParam := c.Query("domain")
+		domainsParam := c.Query("domains")
 
 		var languages []string
 		if languagesParam != "" {
