@@ -1,37 +1,60 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 
-export default function AuthSuccessPage() {
+function AuthSuccessContent() {
   const router = useRouter();
+  // useSearchParams triggers de-opt if not wrapped in Suspense
   const searchParams = useSearchParams();
+  const { checkAuth } = useAuth();
 
   useEffect(() => {
-    const token = searchParams.get("token");
-    const username = searchParams.get("username");
-    const avatar = searchParams.get("avatar");
+    console.log("🔐 Auth Success Page Loaded");
+    
+    const verifyAuth = async () => {
+      // The backend sets a cookie before redirecting here.
+      // We just need to verify the session.
+      console.log("🔄 Verifying session...");
+      try {
+        await checkAuth();
+        console.log("🔀 Redirecting to dashboard");
+        router.push("/dashboard");
+      } catch (error) {
+        console.error("❌ Auth verification failed:", error);
+        router.push("/?error=auth_failed");
+      }
+    };
 
-    if (token) {
-      localStorage.setItem("authToken", token);
-      if (username) localStorage.setItem("githubUsername", username);
-      if (avatar) localStorage.setItem("githubAvatar", avatar);
-      
-      // Redirect to onboarding or wherever appropriate
-      router.push("/onboarding"); 
-    } else {
-      // Handle error case - maybe redirect to login with error
-       router.push("/?error=auth_failed");
-    }
-  }, [router, searchParams]);
+    verifyAuth();
+  }, [router, checkAuth]);
 
   return (
     <div className="flex h-screen items-center justify-center bg-[#0d1117] text-white">
       <div className="text-center space-y-4">
         <h1 className="text-2xl font-semibold">Authenticating...</h1>
         <p className="text-[#8b949e]">Please wait while we log you in.</p>
-        {/* Optional: Add a spinner here */}
+        <div className="flex justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#30363d] border-t-[#2f81f7]"></div>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function AuthSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen items-center justify-center bg-[#0d1117] text-white">
+        <div className="text-center space-y-4">
+          <div className="flex justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#30363d] border-t-[#2f81f7]"></div>
+          </div>
+        </div>
+      </div>
+    }>
+      <AuthSuccessContent />
+    </Suspense>
   );
 }

@@ -9,6 +9,7 @@ import TechSection from "./components/techsection";
 import StickyActionBar from "./components/stickyactionbar";
 import TopicSection from "./components/topicsection";
 import ExperienceSelector from "./components/experienceselector";
+import { useAuth } from "@/contexts/auth-context";
 
 
 export default function OnboardingPage() {
@@ -18,16 +19,8 @@ export default function OnboardingPage() {
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
     const [experienceLevel, setExperienceLevel] = useState<string>("Beginner");
     
-    // Auth state management
-    const [isAuth, setIsAuth] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        // Check for auth token
-        const token = localStorage.getItem("authToken");
-        setIsAuth(!!token);
-        setIsLoading(false);
-    }, []);
+    // Auth state management from context
+    const { isAuthenticated: isAuth, isLoading } = useAuth();
 
     const currentStep = isAuth ? 2 : 1;
 
