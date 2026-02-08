@@ -8,6 +8,7 @@ interface AuthContextType {
   isLoading: boolean;
   username: string | null;
   avatar: string | null;
+  user: { username: string; avatar: string | null } | null;
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -66,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         username,
         avatar,
+        user: username ? { username, avatar } : null,
         checkAuth,
         logout,
       }}

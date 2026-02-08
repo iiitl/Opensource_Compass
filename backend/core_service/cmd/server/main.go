@@ -9,6 +9,7 @@ import (
 	"core-service/internal/db"
 	"core-service/internal/orchestration"
 	"core-service/internal/preferences"
+	"core-service/internal/users"
 	"core-service/routes"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -52,9 +53,10 @@ func main() {
 	routes.RegisterHealthRoutes(mux)
 
 	prefRepo := preferences.NewRepository(dbPool)
+	userRepo := users.NewRepository(dbPool)
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
-	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret)
+	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo)
 
 	// Wrap with CORS middleware
 	handler := corsMiddleware(mux)

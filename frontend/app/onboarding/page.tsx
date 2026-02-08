@@ -10,6 +10,7 @@ import StickyActionBar from "./components/stickyactionbar";
 import TopicSection from "./components/topicsection";
 import ExperienceSelector from "./components/experienceselector";
 import { useAuth } from "@/contexts/auth-context";
+import { savePreferences } from "@/lib/api/preferences";
 
 
 export default function OnboardingPage() {
@@ -18,9 +19,11 @@ export default function OnboardingPage() {
     const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
     const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
     const [experienceLevel, setExperienceLevel] = useState<string>("Beginner");
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     
     // Auth state management from context
-    const { isAuthenticated: isAuth, isLoading } = useAuth();
+    const { isAuthenticated: isAuth, isLoading, user } = useAuth();
 
     const currentStep = isAuth ? 2 : 1;
 
@@ -40,19 +43,37 @@ export default function OnboardingPage() {
         return () => ctx.revert();
     }, [isLoading, isAuth]); // Re-run animation when state changes
 
-    const handleContinue = () => {
-        // Save preferences to localStorage
-        console.log("Saving to localStorage:", {
-            techStack: selectedLanguages,
-            topics: selectedTopics,
-            experienceLevel: experienceLevel
-        });
-        
-        localStorage.setItem("techStack", JSON.stringify(selectedLanguages));
-        localStorage.setItem("topics", JSON.stringify(selectedTopics));
-        localStorage.setItem("experienceLevel", experienceLevel);
-        
-        router.push("/discover");
+    const handleContinue = async () => {
+        if (!user?.username) {
+            setError("User information not available. Please login again.");
+            return;
+        }
+
+        try {
+            setIsSaving(true);
+            setError(null);
+
+            console.log("💾 Saving preferences to database:", {
+                languages: selectedLanguages,
+                topics: selectedTopics,
+                experienceLevel: experienceLevel,
+                githubUsername: user.username
+            });
+
+            await savePreferences({
+                languages: selectedLanguages,
+                topics: selectedTopics,
+                experienceLevel: experienceLevel,
+                githubUsername: user.username
+            });
+
+            console.log("✅ Preferences saved successfully");
+            router.push("/discover");
+        } catch (err: any) {
+            console.error("❌ Failed to save preferences:", err);
+            setError(err.message || "Failed to save preferences. Please try again.");
+            setIsSaving(false);
+        }
     };
 
     if (isLoading) return null; // Or a loading spinner
@@ -122,6 +143,8 @@ export default function OnboardingPage() {
                     <StickyActionBar 
                         isValid={selectedLanguages.length > 0} 
                         onContinue={handleContinue}
+                        isLoading={isSaving}
+                        error={error}
                     />
                 )}
             </div>
