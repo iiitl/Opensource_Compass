@@ -8,17 +8,20 @@ import (
 	"core-service/internal/auth"
 	"core-service/internal/orchestration"
 	"core-service/internal/scoring"
+	"core-service/internal/users"
 )
 
 type RecommendationHandler struct {
 	service   *orchestration.Service
 	jwtSecret string
+	userRepo  *users.Repository
 }
 
-func NewRecommendationHandler(service *orchestration.Service, jwtSecret string) *RecommendationHandler {
+func NewRecommendationHandler(service *orchestration.Service, jwtSecret string, userRepo *users.Repository) *RecommendationHandler {
 	return &RecommendationHandler{
 		service:   service,
 		jwtSecret: jwtSecret,
+		userRepo:  userRepo,
 	}
 }
 
@@ -42,8 +45,16 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 		return
 	}
 
+	// Fetch user's GitHub token from database
+	githubToken, err := h.userRepo.GetGitHubToken(ctx, userID)
+	if err != nil {
+		// Log but don't fail - we can still try with empty token
+		// (GitHub Service might have fallback app token)
+		githubToken = ""
+	}
+
 	// repo should be in "owner/repo" format (e.g., nodejs/node)
-	repos, err := h.service.SearchReposForUser(ctx, userCtx, token)
+	repos, err := h.service.SearchReposForUser(ctx, userCtx, githubToken)
 	if err != nil || len(repos) == 0 {
 		http.Error(w, "no repositories found", http.StatusInternalServerError)
 		return

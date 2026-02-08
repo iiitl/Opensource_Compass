@@ -64,3 +64,29 @@ func (r *Repository) CreateOrGet(ctx context.Context, id string, githubUsername 
 
 	return r.GetByID(ctx, id)
 }
+
+func (r *Repository) UpdateGitHubToken(ctx context.Context, userID string, token string) error {
+	query := `
+		UPDATE users
+		SET github_token = $1
+		WHERE id = $2
+	`
+	_, err := r.db.Exec(ctx, query, token, userID)
+	return err
+}
+
+func (r *Repository) GetGitHubToken(ctx context.Context, userID string) (string, error) {
+	query := `
+		SELECT github_token
+		FROM users
+		WHERE id = $1
+	`
+
+	var token string
+	err := r.db.QueryRow(ctx, query, userID).Scan(&token)
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
