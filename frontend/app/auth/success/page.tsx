@@ -19,8 +19,8 @@ function AuthSuccessContent() {
       console.log("🔄 Verifying session...");
       try {
         await checkAuth();
-        console.log("🔀 Redirecting to dashboard");
-        router.push("/dashboard");
+        console.log("🔀 Redirecting to onboarding");
+        router.push("/onboarding");
       } catch (error) {
         console.error("❌ Auth verification failed:", error);
         router.push("/?error=auth_failed");

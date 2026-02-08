@@ -22,7 +22,7 @@ func RegisterRoutes(
 	userHandler := NewUserHandler(userRepo, jwtSecret)
 
 	mux.Handle("/recommendations", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(handler.GetRecommendations)))
-	mux.Handle("/preferences", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(prefHandler.SavePreferences)))
+	mux.Handle("/preferences", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(prefHandler.HandlePreferences)))
 	mux.Handle("/users/", auth.JWTMiddleware(jwtSecret, userHandler))
 	mux.HandleFunc("/db-check", func(w http.ResponseWriter, r *http.Request) {
 		count, err := orchService.DBCheck(r.Context())

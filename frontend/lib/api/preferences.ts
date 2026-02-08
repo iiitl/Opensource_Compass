@@ -34,3 +34,34 @@ export async function savePreferences(data: SavePreferencesRequest): Promise<voi
         throw error;
     }
 }
+
+export interface UserPreferences {
+    languages: string[];
+    topics: string[];
+    experienceLevel: string;
+}
+
+export async function getPreferences(): Promise<UserPreferences> {
+    try {
+        const response = await fetch(PREFERENCES_URL, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('Unauthorized - please login again');
+            }
+            throw new Error(`Failed to fetch preferences: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('❌ Error fetching preferences:', error);
+        throw error;
+    }
+}
+

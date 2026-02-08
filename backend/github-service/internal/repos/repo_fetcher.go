@@ -31,6 +31,8 @@ func mapDomainToTopics(userDomains []string) []string {
 		"Security":              "security",
 		"Data Science":          "data-science",
 		"Tools & Libraries":     "cli",
+		"Backend Development":   "backend",
+		"backend":               "backend", // robust fallback
 	}
 
 	topics := []string{}
@@ -71,6 +73,11 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 	}
 
 	query := strings.Join(queryParts, " ")
+
+	// Default query if nothing selected
+	if query == "" {
+		query = "stars:>1000"
+	}
 
 	log.Println("Github search query: ", query)
 

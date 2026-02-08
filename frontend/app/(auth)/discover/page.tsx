@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { searchRepositories, Repository } from "@/lib/api/github-service";
+import { getPreferences } from "@/lib/api/preferences";
 import DiscoverHero from "./components/discoverhero";
 import ActiveFilters from "./components/activefilters";
 import RepoGrid from "../issues/components/repogrid";
@@ -24,26 +25,21 @@ export default function DiscoverPage() {
       setLoading(true);
       setError(null);
       
-      // Get user's preferences from localStorage
-      const techStackStr = localStorage.getItem("techStack");
-      const topicsStr = localStorage.getItem("topics");
-      const experienceLevelStr = localStorage.getItem("experienceLevel") || "Beginner";
-      const usernameStr = localStorage.getItem("githubUsername");
+      // Fetch user preferences from backend
+      const prefs = await getPreferences();
       
-      const parsedLanguages = techStackStr ? JSON.parse(techStackStr) : [];
-      const parsedTopics = topicsStr ? JSON.parse(topicsStr) : [];
+      setLanguages(prefs.languages);
+      setTopics(prefs.topics);
+      setExperienceLevel(prefs.experienceLevel);
       
-      setLanguages(parsedLanguages);
-      setTopics(parsedTopics);
-      setExperienceLevel(experienceLevelStr);
-      setUsername(usernameStr);
-      
-      // Fetch repositories
-      const repositories = await searchRepositories(parsedLanguages, [], parsedTopics);
+      // Fetch repositories using preferences
+      const repositories = await searchRepositories(prefs.languages, [], prefs.topics);
       setRepos(repositories);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load repositories:", err);
-      setError("Failed to load repositories");
+      // If error is 401, it will be handled by the API client or global error boundary
+      // For now, we just show a generic error
+      setError("Failed to load repositories. Please check your connection.");
     } finally {
       setLoading(false);
     }

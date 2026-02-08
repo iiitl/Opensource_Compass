@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -27,35 +28,52 @@ func NewRecommendationHandler(service *orchestration.Service, jwtSecret string, 
 
 func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
+	log.Println("GetRecommendations: Starting request")
 
 	authHeader := r.Header.Get("Authorization")
 	token := ""
 	if authHeader != "" {
 		token = strings.TrimPrefix(authHeader, "Bearer ")
 	}
+	log.Printf("GetRecommendations: Auth header present: %v", authHeader != "")
 
 	userID, err := auth.ExtractUserID(token, h.jwtSecret)
 	if err != nil {
+		log.Printf("GetRecommendations: Auth failed: %v", err)
 		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
+	log.Printf("GetRecommendations: User ID: %s", userID)
+
 	userCtx, err := h.service.BuildUserContext(ctx, userID)
 	if err != nil {
+		log.Printf("GetRecommendations: BuildUserContext failed: %v", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	log.Printf("GetRecommendations: User context built with %d preferences", len(userCtx.Preferences))
 
 	// Fetch user's GitHub token from database
 	githubToken, err := h.userRepo.GetGitHubToken(ctx, userID)
 	if err != nil {
 		// Log but don't fail - we can still try with empty token
 		// (GitHub Service might have fallback app token)
+		log.Printf("GetRecommendations: GetGitHubToken failed (non-fatal): %v", err)
 		githubToken = ""
 	}
 
 	// repo should be in "owner/repo" format (e.g., nodejs/node)
+	log.Println("GetRecommendations: Calling SearchReposForUser")
 	repos, err := h.service.SearchReposForUser(ctx, userCtx, githubToken)
-	if err != nil || len(repos) == 0 {
+	if err != nil {
+		log.Printf("GetRecommendations: SearchReposForUser failed: %v", err)
+		http.Error(w, "failed to search repos: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	log.Printf("GetRecommendations: Found %d repos", len(repos))
+
+	if len(repos) == 0 {
+		log.Println("GetRecommendations: No repos found, returning error")
 		http.Error(w, "no repositories found", http.StatusInternalServerError)
 		return
 	}
@@ -74,15 +92,23 @@ func (h *RecommendationHandler) GetRecommendations(w http.ResponseWriter, r *htt
 	found := false
 	for i := 0; i < limit; i++ {
 		candidateRepo := repos[i]
+		log.Printf("GetRecommendations: Checking repo %d/%d: %s", i+1, limit, candidateRepo)
 
-		// We need to fetch issues to check if there are any
-		candidateIssues, err := h.service.FetchAndEnrichIssues(ctx, candidateRepo, 3, token)
-		if err == nil && len(candidateIssues) > 0 {
+		// FIXED: Use githubToken instead of JWT token
+		candidateIssues, err := h.service.FetchAndEnrichIssues(ctx, candidateRepo, 3, githubToken)
+		if err != nil {
+			log.Printf("GetRecommendations: FetchAndEnrichIssues failed for %s: %v", candidateRepo, err)
+			continue
+		}
+
+		if len(candidateIssues) > 0 {
+			log.Printf("GetRecommendations: Found %d issues for %s", len(candidateIssues), candidateRepo)
 			topRepo = candidateRepo
 			issues = candidateIssues
 			found = true
 			break
 		}
+		log.Printf("GetRecommendations: No issues found for %s", candidateRepo)
 	}
 
 	// Fallback to first repo if none with issues found
