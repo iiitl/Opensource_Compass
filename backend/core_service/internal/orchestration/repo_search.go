@@ -25,7 +25,7 @@ func (s *Service) SearchReposForUser(
 		languageQuery += l
 	}
 
-	domainQuery := "backend"
+	domainQuery := ""
 
 	repos, err := s.githubClient.SearchRepos(ctx, languageQuery, domainQuery, token)
 	if err != nil {
