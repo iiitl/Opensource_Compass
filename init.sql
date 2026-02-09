@@ -1,24 +1,15 @@
--- Create users table
-CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    github_username TEXT,
-    experience_level TEXT,
-    github_token TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Create user_preferences table
 CREATE TABLE IF NOT EXISTS user_preferences (
     id VARCHAR(255) PRIMARY KEY,
-    user_id TEXT NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
     preference_type VARCHAR(50) NOT NULL,
     value VARCHAR(255) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Dummy data for testing (optional - can be removed for production)
--- INSERT INTO user_preferences (id, user_id, preference_type, value) VALUES
--- ('550e8400-e29b-41d4-a716-446655440001', '73421387', 'language', 'go'),
--- ('550e8400-e29b-41d4-a716-446655440002', '73421387', 'language', 'python'),
--- ('550e8400-e29b-41d4-a716-446655440003', '73421387', 'domain', 'backend'),
--- ('550e8400-e29b-41d4-a716-446655440004', '73421387', 'domain', 'ai');
+-- Dummy data for testing
+-- User ID "7.3421387e+07" matches the token provided by the user
+INSERT INTO user_preferences (id, user_id, preference_type, value) VALUES
+('1', '7.3421387e+07', 'language', 'go'),
+('2', '7.3421387e+07', 'language', 'python'),
+('3', '7.3421387e+07', 'domain', 'backend'),
+('4', '7.3421387e+07', 'domain', 'ai');

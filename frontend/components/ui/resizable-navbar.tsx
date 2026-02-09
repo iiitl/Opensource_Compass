@@ -234,31 +234,32 @@ export const NavbarLogo = () => {
   return (
     <a
       href="/"
-      className="relative z-20 mr-4 flex items-center space-x-2 px-2 py-1 text-sm font-normal text-black"
+      className="relative z-20 mr-6 flex items-center gap-3 px-2 py-1"
     >
-       <img
-        // src="https://assets.aceternity.com/logo-dark.png"
-        src="/assets/brand/logo.jpeg"
-        alt="logo"
-        className="rounded-full"
-        width={30}
-        height={30}
+      {/* Logo Icon */}
+      <img
+        src="assets/logo.png"
+        alt="ContriBot logo"
+        width={42}
+        height={42}
+        className="
+          rounded-xl
+          bg-[#0d1117]
+          p-1
+          ring-1 ring-white/10
+          shadow-[0_0_12px_rgba(79,140,255,0.35)]
+        "
       />
-<span className="
-  text-xl
-  font-bold
-  tracking-tight
-  text-gray-900
-  dark:text-white
-  transition-all
-  duration-300
-  hover:tracking-wide
-">
-  Show<span className="text-indigo-500">My</span>Space
-</span>
+
+      {/* Logo Text */}
+      <span className="text-xl font-bold tracking-tight leading-none">
+        <span className="text-white">Contri</span>
+        <span className="text-[#4f8cff]">Bot</span>
+      </span>
     </a>
   );
 };
+
 
 export const NavbarButton = ({
   href,

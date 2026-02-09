@@ -111,22 +111,37 @@ export default function HeroSection() {
           </p>
         </div>
 
-        {/* RIGHT VISUAL (Optional) */}
-        <div className="hidden md:block">
-          <div className="hero-animate relative rounded-xl border border-[#30363d] bg-[#161b22] p-6 shadow-lg">
-            <div className="space-y-3">
-              <div className="h-3 w-1/3 rounded bg-[#30363d]" />
-              <div className="h-3 w-2/3 rounded bg-[#30363d]" />
-              <div className="h-3 w-1/2 rounded bg-[#30363d]" />
-
-              <div className="mt-6 space-y-2">
-                <div className="h-10 rounded bg-[#0d1117] border border-[#30363d]" />
-                <div className="h-10 rounded bg-[#0d1117] border border-[#30363d]" />
-                <div className="h-10 rounded bg-[#0d1117] border border-[#30363d]" />
-              </div>
-            </div>
+        {/* RIGHT VISUAL */}
+        <div className="hidden md:block relative">
+          <div
+            className="
+              relative aspect-[16/9]
+              rounded-3xl
+              border border-[#30363d]
+              bg-[#161b22]
+              overflow-hidden
+              shadow-[0_0_100px_rgba(59,130,246,0.35)]
+              scale-[1.2]
+              lg:scale-[1.3]
+              translate-x-10
+              lg:translate-x-16
+            "
+          >
+            <video
+              src="/assets/landingvid.mp4"
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+            />
           </div>
         </div>
+
+
+
+
+
       </div>
     </section>
   );

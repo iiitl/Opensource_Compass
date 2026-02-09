@@ -15,12 +15,12 @@ import { useState } from "react";
 export default function NavbarDemo() {
   const navItems = [
     {
-      name: "Features",
-      link: "#features",
+      name: "Flow",
+      link: "#flow",
     },
     {
-      name: "Pricing",
-      link: "#pricing",
+      name: "Approach",
+      link: "#approach",
     },
     {
       name: "Contact",
@@ -30,10 +30,6 @@ export default function NavbarDemo() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const handleLogin = () => {
-    window.location.href = "/api/auth/github";
-  };
-
   return (
     <div className="relative w-full sticky bg-[#010409] top-0 z-50 ">
       <Navbar>
@@ -42,7 +38,7 @@ export default function NavbarDemo() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary" onClick={handleLogin}>Login</NavbarButton>
+            <NavbarButton variant="secondary">Login</NavbarButton>
             <NavbarButton variant="primary">Book a call</NavbarButton>
           </div>
         </NavBody>
@@ -73,10 +69,7 @@ export default function NavbarDemo() {
             ))}
             <div className="flex w-full flex-col gap-4">
               <NavbarButton
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  handleLogin();
-                }}
+                onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
               >
