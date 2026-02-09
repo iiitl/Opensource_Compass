@@ -2,6 +2,7 @@ package users
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -82,11 +83,16 @@ func (r *Repository) GetGitHubToken(ctx context.Context, userID string) (string,
 		WHERE id = $1
 	`
 
-	var token string
+	var token sql.NullString
 	err := r.db.QueryRow(ctx, query, userID).Scan(&token)
 	if err != nil {
 		return "", err
 	}
 
-	return token, nil
+	// Return empty string if token is NULL
+	if !token.Valid {
+		return "", nil
+	}
+
+	return token.String, nil
 }
