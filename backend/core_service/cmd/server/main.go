@@ -9,17 +9,13 @@ import (
 	"core-service/internal/db"
 	"core-service/internal/orchestration"
 	"core-service/internal/preferences"
-<<<<<<< HEAD
 	"core-service/internal/users"
-=======
->>>>>>> origin/main
 	"core-service/routes"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
-<<<<<<< HEAD
 // CORS middleware
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -43,14 +39,6 @@ func main() {
 	aiClient := clients.NewAIClient(cfg.AISvcURL)
 	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
 
-=======
-func main() {
-	_ = godotenv.Load()
-	cfg := config.Load()
-	aiClient := clients.NewAIClient(cfg.AISvcURL)
-	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
-
->>>>>>> origin/main
 	var dbPool *pgxpool.Pool
 	var err error
 
@@ -65,7 +53,6 @@ func main() {
 	routes.RegisterHealthRoutes(mux)
 
 	prefRepo := preferences.NewRepository(dbPool)
-<<<<<<< HEAD
 	userRepo := users.NewRepository(dbPool)
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
@@ -76,12 +63,4 @@ func main() {
 
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, handler))
-=======
-	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
-
-	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret)
-
-	log.Printf("Core service running on :%s\n", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
->>>>>>> origin/main
 }
