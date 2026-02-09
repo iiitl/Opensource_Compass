@@ -47,7 +47,25 @@ func RegisterGithubRoutes(router *gin.Engine) {
 			return
 		}
 
-		c.JSON(http.StatusOK, repoList)
+		// Transform to match frontend interface
+		response := make([]gin.H, 0)
+		for _, repo := range repoList {
+			ownerAndName := strings.Split(repo.FullName, "/")
+			owner := ownerAndName[0]
+
+			response = append(response, gin.H{
+				"owner":            owner,
+				"name":             repo.Name,
+				"full_name":        repo.FullName,
+				"description":      repo.Description,
+				"html_url":         repo.URL,
+				"stargazers_count": repo.Stars,
+				"language":         "", // Not provided by backend currently
+				"updated_at":       repo.LastPushedAt,
+			})
+		}
+
+		c.JSON(http.StatusOK, response)
 	})
 
 	router.GET("/repos/:owner/:repo", func(c *gin.Context) {
