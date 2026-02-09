@@ -6,24 +6,16 @@ import (
 
 	"core-service/internal/auth"
 	"core-service/internal/orchestration"
-	"core-service/internal/preferences"
-	"core-service/internal/users"
 )
 
 func RegisterRoutes(
 	mux *http.ServeMux,
 	orchService *orchestration.Service,
 	jwtSecret string,
-	prefRepo *preferences.Repository,
-	userRepo *users.Repository,
 ) {
-	handler := NewRecommendationHandler(orchService, jwtSecret, userRepo)
-	prefHandler := NewPreferencesHandler(prefRepo, userRepo, jwtSecret)
-	userHandler := NewUserHandler(userRepo, jwtSecret)
+	handler := NewRecommendationHandler(orchService, jwtSecret)
 
 	mux.Handle("/recommendations", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(handler.GetRecommendations)))
-	mux.Handle("/preferences", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(prefHandler.HandlePreferences)))
-	mux.Handle("/users/", auth.JWTMiddleware(jwtSecret, userHandler))
 	mux.HandleFunc("/db-check", func(w http.ResponseWriter, r *http.Request) {
 		count, err := orchService.DBCheck(r.Context())
 		if err != nil {

@@ -13,17 +13,9 @@ import (
 func main() {
 	cfg := config.Load()
 
-	// Initialize LLM client based on provider
-	var llmClient llm.Client
-	if cfg.LLMProvider == "groq" {
-		log.Println("Using Groq LLM provider")
-		llmClient = llm.NewGroqClient(cfg.Model)
-	} else {
-		log.Println("Using Gemini LLM provider")
-		llmClient = llm.NewGeminiClient(cfg.Model)
-	}
-
+	llmClient := llm.NewGeminiClient(cfg.Model)
 	analyzer := analysis.NewAnalyzer(llmClient)
+	
 
 	http.HandleFunc("/analyze-issue", routes.AnalyzeIssue(analyzer))
 

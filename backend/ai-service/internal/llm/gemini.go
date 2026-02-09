@@ -41,7 +41,10 @@ func (c *GeminiClient) Chat(messages []Message) (string, error) {
 	b, _ := json.Marshal(body)
 
 	url := "https://generativelanguage.googleapis.com/v1/" +
-		c.model + ":generateContent?key=" + c.apiKey
+    c.model + ":generateContent?key=" + c.apiKey
+
+
+
 
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
@@ -53,18 +56,8 @@ func (c *GeminiClient) Chat(messages []Message) (string, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		// Read response body for error details
-		var errorBody bytes.Buffer
-		errorBody.ReadFrom(resp.Body)
-		errorMsg := errorBody.String()
-
-		// Log detailed error
-		println("❌ Gemini API Error:")
-		println("   Status Code:", resp.StatusCode)
-		println("   Response:", errorMsg)
-
-		return "", errors.New("Gemini request failed with status " + string(rune(resp.StatusCode)) + ": " + errorMsg)
-	}
+	return "", errors.New("Gemini request failed")
+}
 
 	var res struct {
 		Candidates []struct {
@@ -77,11 +70,5 @@ func (c *GeminiClient) Chat(messages []Message) (string, error) {
 	}
 
 	json.NewDecoder(resp.Body).Decode(&res)
-
-	// Validate response structure
-	if len(res.Candidates) == 0 || len(res.Candidates[0].Content.Parts) == 0 {
-		return "", errors.New("Gemini returned empty response")
-	}
-
 	return res.Candidates[0].Content.Parts[0].Text, nil
 }

@@ -9,48 +9,18 @@ import (
 	"core-service/internal/db"
 	"core-service/internal/orchestration"
 	"core-service/internal/preferences"
-<<<<<<< HEAD
-	"core-service/internal/users"
-=======
->>>>>>> origin/main
 	"core-service/routes"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
-<<<<<<< HEAD
-// CORS middleware
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		// Handle preflight requests
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 func main() {
 	_ = godotenv.Load()
 	cfg := config.Load()
 	aiClient := clients.NewAIClient(cfg.AISvcURL)
 	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
 
-=======
-func main() {
-	_ = godotenv.Load()
-	cfg := config.Load()
-	aiClient := clients.NewAIClient(cfg.AISvcURL)
-	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
-
->>>>>>> origin/main
 	var dbPool *pgxpool.Pool
 	var err error
 
@@ -65,23 +35,10 @@ func main() {
 	routes.RegisterHealthRoutes(mux)
 
 	prefRepo := preferences.NewRepository(dbPool)
-<<<<<<< HEAD
-	userRepo := users.NewRepository(dbPool)
-	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
-
-	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo)
-
-	// Wrap with CORS middleware
-	handler := corsMiddleware(mux)
-
-	log.Printf("Core service running on :%s\n", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, handler))
-=======
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
 	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret)
 
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
->>>>>>> origin/main
 }
