@@ -1,14 +1,72 @@
-version: '3.8'
+
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: compass_db
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: compass_db
+  # Check if postgres service is still needed.
+  # User is using Supabase, but keeping local postgres might be useful for offline dev?
+  # Prompt implied "deploy using free versions", so Supabase is the main DB.
+  # We can keep postgres service but it won't be used by the app unless we change env.
+  # Actually, let's COMMENT IT OUT to avoid confusion and resource usage, 
+  # but keep it there if they want to revert.
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: compass_db
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: compass_db
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  core_service:
+    build: 
+      context: ./backend/core_service
+    container_name: compass_core
     ports:
-      - "5432:5432"
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - "8083:8083"
+    environment:
+      - SERVER_PORT=8083
+      - DATABASE_URL=${DATABASE_URL}
+      - GITHUB_SERVICE_URL=http://github-service:8081
+      - AI_SERVICE_URL=http://ai-service:8082
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - github-service
+      - ai-service
+
+  auth-service:
+    build:
+      context: ./backend/auth-service
+    container_name: compass_auth
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=http://localhost:3000
+
+  github-service:
+    build:
+      context: ./backend/github-service
+    container_name: compass_github
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+
+  ai-service:
+    build:
+      context: ./backend/ai-service
+    container_name: compass_ai
+    ports:
+      - "8082:8082"
+    environment:
+      - AI_SERVICE_PORT=8082
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - LLM_PROVIDER=${LLM_PROVIDER}
+      - LLM_MODEL=${LLM_MODEL}

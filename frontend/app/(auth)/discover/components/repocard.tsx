@@ -1,38 +1,104 @@
-import { Star, Clock, GitBranch } from "lucide-react";
+import { Star, Clock, GitFork, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Repository } from "@/lib/api/github-service";
 
-export default function RepoCard() {
+interface RepoCardProps {
+  repo: Repository;
+}
+
+const languageColors: Record<string, string> = {
+  JavaScript: "#f1e05a",
+  TypeScript: "#3178c6",
+  Python: "#3572A5",
+  Java: "#b07219",
+  Go: "#00ADD8",
+  Rust: "#dea584",
+  "C++": "#f34b7d",
+  Ruby: "#701516",
+  PHP: "#4F5D95",
+  Swift: "#ffac45",
+  Kotlin: "#A97BFF",
+};
+
+export default function RepoCard({ repo }: RepoCardProps) {
+  const formatStars = (count: number | undefined): string => {
+    if (!count && count !== 0) return "0";
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}k`;
+    }
+    return count.toString();
+  };
+
+  const timeSinceUpdate = (dateString: string | undefined): string => {
+    if (!dateString) return "Unknown";
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffInDays === 0) return "Today";
+    if (diffInDays === 1) return "Yesterday";
+    if (diffInDays < 7) return `${diffInDays} days ago`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
+    return `${Math.floor(diffInDays / 30)} months ago`;
+  };
+
+  const isRecentlyActive = (dateString: string | undefined): boolean => {
+    if (!dateString) return false;
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    return diffInDays <= 30;
+  };
+
+  const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
+
   return (
-    <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-5 flex flex-col justify-between hover:border-[#2f81f7] transition-colors">
+    <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-6 flex flex-col justify-between hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all hover:-translate-y-1 group">
       
       {/* Header */}
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">
-          react-awesome-project
-        </h3>
+      <div className="space-y-3">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-lg font-semibold group-hover:text-[#2f81f7] transition-colors">
+            {repo.name}
+          </h3>
+          {isRecentlyActive(repo.updated_at) && (
+            <span className="px-2 py-0.5 text-xs bg-green-500/10 text-green-400 border border-green-500/20 rounded-full shrink-0">
+              Active
+            </span>
+          )}
+        </div>
+        
         <p className="text-sm text-[#6e7681]">
-          facebook / open-source
+          {repo.owner}
         </p>
 
-        <p className="mt-2 text-sm text-[#8b949e]">
-          Recommended because it uses React, has active maintainers,
-          and consistently labels beginner-friendly issues.
+        <p className="text-sm text-[#8b949e] line-clamp-2 leading-relaxed">
+          {repo.description || "No description available"}
         </p>
+
+        {/* Language Badge */}
+        {repo.language && (
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#161b22] border border-[#30363d] rounded-full text-xs">
+            <div 
+              className="w-2.5 h-2.5 rounded-full" 
+              style={{ backgroundColor: languageColor }}
+            />
+            <span>{repo.language}</span>
+          </div>
+        )}
       </div>
 
       {/* Meta */}
-      <div className="mt-4 flex items-center justify-between text-sm text-[#8b949e]">
-        <div className="flex items-center gap-2">
-          <GitBranch className="h-4 w-4" />
-          JavaScript
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1">
-            <Star className="h-4 w-4" /> 12k
+      <div className="mt-5 flex items-center justify-between text-sm text-[#8b949e] border-t border-[#30363d] pt-4">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <Star className="h-4 w-4" />
+            <span>{formatStars(repo.stargazers_count)}</span>
           </div>
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" /> Active
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-4 w-4" />
+            <span className="text-xs">{timeSinceUpdate(repo.updated_at)}</span>
           </div>
         </div>
       </div>
@@ -41,15 +107,11 @@ export default function RepoCard() {
       <div className="mt-5 flex gap-3">
         <Button
           variant="secondary"
-          className="flex-1 bg-[#161b22]"
+          className="flex-1 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d]"
+          onClick={() => window.open(repo.html_url, '_blank')}
         >
-          View Issues
-        </Button>
-        <Button
-          variant="outline"
-          className="border-[#30363d]"
-        >
-          Save
+          <ExternalLink className="h-4 w-4 mr-2" />
+          View on GitHub
         </Button>
       </div>
     </div>

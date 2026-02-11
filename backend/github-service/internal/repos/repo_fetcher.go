@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"strings"
@@ -20,40 +19,72 @@ type RepoDTO struct {
 	OpenIssues   int    `json:"open_issues"`
 }
 
-func buildORQuery(prefix string, values []string) string {
+// Map user-friendly domain names to GitHub topics
+// NOTE: Using only PRIMARY topic per domain because GitHub ANDs multiple topics together
+func mapDomainToTopics(userDomains []string) []string {
+	mapping := map[string]string{
+		"Web Development":       "web",
+		"Mobile Development":    "mobile",
+		"AI & Machine Learning": "machine-learning",
+		"DevOps & Cloud":        "devops",
+		"Game Development":      "game",
+		"Security":              "security",
+		"Data Science":          "data-science",
+		"Tools & Libraries":     "cli",
+		"Backend Development":   "backend",
+		"backend":               "backend", // robust fallback
+	}
+
+	topics := []string{}
+	for _, domain := range userDomains {
+		if mapped, ok := mapping[domain]; ok {
+			topics = append(topics, mapped)
+		}
+	}
+	return topics
+}
+
+func buildQuery(prefix string, values []string) string {
 	if len(values) == 0 {
 		return ""
 	}
 
 	parts := make([]string, 0)
 	for _, v := range values {
-		if prefix != "" {
-			parts = append(parts, prefix+": "+v)
-		} else {
-			parts = append(parts, v)
-		}
+		parts = append(parts, prefix+":"+v)
 	}
 
-	return "(" + strings.Join(parts, " OR ") + ")"
+	return strings.Join(parts, " ")
 }
 
 func FetchRepos(languages []string, frameworks []string, domains []string, token string) ([]RepoDTO, error) {
 	queryParts := []string{}
 
-	if q := buildORQuery("language", languages); q != "" {
+	// Add languages to query (GitHub searches with implicit OR)
+	if q := buildQuery("language", languages); q != "" {
 		queryParts = append(queryParts, q)
 	}
 
-	if q := buildORQuery("topic", domains); q != "" {
-		queryParts = append(queryParts, q)
+	// Map user-friendly domain names to GitHub topics
+	topics := mapDomainToTopics(domains)
+	if len(topics) > 0 {
+		topicQuery := buildQuery("topic", topics)
+		queryParts = append(queryParts, topicQuery)
 	}
+
 	query := strings.Join(queryParts, " ")
+
+	// Default query if nothing selected
+	if query == "" {
+		query = "stars:>1000"
+	}
 
 	log.Println("Github search query: ", query)
 
-	page := rand.Intn(10) + 1
+	// Use page 1 instead of random page to ensure we get results
+	page := 1
 
-	url := fmt.Sprintf("https://api.github.com/search/repositories?q=%s&page=%d",
+	url := fmt.Sprintf("https://api.github.com/search/repositories?q=%s&page=%d&per_page=30&sort=stars&order=desc",
 		url.QueryEscape(query), page,
 	)
 
@@ -69,9 +100,16 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("GitHub API request failed: %v", err)
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	// Check response status
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("GitHub API returned status %d", resp.StatusCode)
+		return nil, fmt.Errorf("github api returned status: %d", resp.StatusCode)
+	}
 
 	var raw struct {
 		Items []struct {
@@ -82,12 +120,17 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 			HTMLURL         string `json:"html_url"`
 			PushedAt        string `json:"pushed_at"`
 			OpenIssuesCount int    `json:"open_issues_count"`
+			Language        string `json:"language"`
 		} `json:"items"`
+		TotalCount int `json:"total_count"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		log.Printf("Failed to decode GitHub API response: %v", err)
 		return nil, err
 	}
+
+	log.Printf("GitHub API returned %d repositories (total available: %d)", len(raw.Items), raw.TotalCount)
 
 	repos := make([]RepoDTO, 0)
 	for _, r := range raw.Items {
@@ -101,6 +144,8 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 			OpenIssues:   r.OpenIssuesCount,
 		})
 	}
+
+	log.Printf("Returning %d repositories to client", len(repos))
 	return repos, nil
 }
 
