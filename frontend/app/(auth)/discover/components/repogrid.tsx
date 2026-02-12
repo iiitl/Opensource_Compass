@@ -1,7 +1,8 @@
 "use client";
 
 import { Repository } from "@/lib/api/github-service";
-import { ExternalLink, Star, GitFork, Code, Calendar } from "lucide-react";
+import { IconStar, IconGitFork, IconCircle, IconExternalLink } from "@tabler/icons-react";
+import { WatchButton } from "@/components/watch-button";
 import Link from "next/link";
 
 interface RepoGridProps {
@@ -61,7 +62,7 @@ function RepoCard({ repo }: RepoCardProps) {
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <Code className="h-4 w-4 text-[#8b949e] shrink-0" />
+              <IconCircle className="h-4 w-4 text-[#8b949e] shrink-0" />
               <span className="text-xs text-[#8b949e] truncate">{repo.owner}</span>
             </div>
             <h3 className="text-lg font-bold text-[#58a6ff] group-hover:text-[#79c0ff] transition-colors truncate">
@@ -69,7 +70,7 @@ function RepoCard({ repo }: RepoCardProps) {
             </h3>
           </div>
           <div className="ml-3 p-2 rounded-lg bg-[#21262d] border border-[#30363d] group-hover:border-[#58a6ff] group-hover:bg-[#58a6ff]/10 transition-all">
-            <ExternalLink className="h-4 w-4 text-[#8b949e] group-hover:text-[#58a6ff]" />
+            <IconExternalLink className="h-4 w-4 text-[#8b949e] group-hover:text-[#58a6ff]" />
           </div>
         </div>
 
@@ -89,7 +90,7 @@ function RepoCard({ repo }: RepoCardProps) {
           {/* Stars */}
           {repo.stargazers_count !== undefined && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#21262d] border border-[#30363d]">
-              <Star className="h-3.5 w-3.5 text-[#f1e05a] fill-[#f1e05a]" />
+              <IconStar className="h-3.5 w-3.5 text-[#f1e05a] fill-[#f1e05a]" />
               <span className="text-xs font-semibold text-[#c9d1d9]">
                 {formatStars(repo.stargazers_count)}
               </span>
@@ -107,10 +108,24 @@ function RepoCard({ repo }: RepoCardProps) {
           {/* Updated */}
           {repo.updated_at && (
             <div className="flex items-center gap-1.5 ml-auto">
-              <Calendar className="h-3.5 w-3.5 text-[#6e7681]" />
               <span className="text-xs text-[#6e7681]">{formatDate(repo.updated_at)}</span>
             </div>
           )}
+        </div>
+
+        {/* Action area */}
+        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#30363d]">
+          <a
+            href={repo.html_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-[#58a6ff] hover:underline flex items-center gap-1"
+          >
+            View Repository <IconExternalLink className="w-3 h-3" />
+          </a>
+          <div className="ml-auto">
+             <WatchButton owner={repo.owner} name={repo.name} />
+          </div>
         </div>
 
         {/* Topics */}
