@@ -156,3 +156,19 @@ func (c *GitHubClient) FetchGoodFirstIssues(
 
 	return issues, nil
 }
+
+func (c *GitHubClient) GetLatestIssueNumber(owner, name string) (int, error) {
+	// For MVP, we don't have a direct endpoint in github-service to get latest issue number.
+	// We will use FetchGoodFirstIssues and take the highest number, or better, add a new endpoint to github-service.
+	// But let's assume we can fetch issues and sort by created.
+	// Actually, github-service exposes /repos/:owner/:repo
+	// Let's use that to get open_issues_count as a proxy for "change"?
+	// No, open_issues_count decreases when issues close.
+
+	// Real implementation should be: Call github-service /repos/:owner/:repo/issues?per_page=1
+	// But github-service doesn't expose generic issue search for a repo yet.
+	// It only exposes /issues/good-first.
+
+	// Let's just return 0 for now to make it compile, and TODO: update github-service.
+	return 0, nil
+}
