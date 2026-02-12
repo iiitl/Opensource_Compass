@@ -5,7 +5,7 @@ import { searchRepositories, Repository } from "@/lib/api/github-service";
 import { getPreferences } from "@/lib/api/preferences";
 import DiscoverHero from "./components/discoverhero";
 import ActiveFilters from "./components/activefilters";
-import RepoGrid from "../issues/components/repogrid";
+import RepoGrid from "./components/repogrid";
 import SkeletonCard from "./components/skeletoncard";
 import EmptyState from "./components/emptystate";
 
@@ -28,9 +28,9 @@ export default function DiscoverPage() {
       // Fetch user preferences from backend
       const prefs = await getPreferences();
       
-      setLanguages(prefs.languages);
-      setTopics(prefs.topics);
-      setExperienceLevel(prefs.experienceLevel);
+      setLanguages(prefs.languages || []);
+      setTopics(prefs.topics || []);
+      setExperienceLevel(prefs.experienceLevel || "Beginner");
       
       // Fetch repositories using preferences
       const repositories = await searchRepositories(prefs.languages, [], prefs.topics);

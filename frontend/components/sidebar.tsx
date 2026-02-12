@@ -29,24 +29,10 @@ export default function SidebarComponent() {
       ),
     },
     {
-      label: "Issues",
-      href: "/issues",
-      icon: (
-        <IconBug className="h-5 w-5 shrink-0 text-[#8b949e]" />
-      ),
-    },
-    {
       label: "Recommendations",
       href: "/recommendations",
       icon: (
         <IconStars className="h-5 w-5 shrink-0 text-[#8b949e]" />
-      ),
-    },
-    {
-      label: "Dashboard",
-      href: "/dashboard",
-      icon: (
-        <IconBrandTabler className="h-5 w-5 shrink-0 text-[#8b949e]" />
       ),
     },
     {
