@@ -22,3 +22,12 @@ CREATE TABLE IF NOT EXISTS user_preferences (
 -- ('550e8400-e29b-41d4-a716-446655440002', '73421387', 'language', 'python'),
 -- ('550e8400-e29b-41d4-a716-446655440003', '73421387', 'domain', 'backend'),
 -- ('550e8400-e29b-41d4-a716-446655440004', '73421387', 'domain', 'ai');
+-- Create watched_repos table
+CREATE TABLE IF NOT EXISTS watched_repos (
+    id SERIAL PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    repo_owner VARCHAR(255) NOT NULL,
+    repo_name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, repo_owner, repo_name)
+);

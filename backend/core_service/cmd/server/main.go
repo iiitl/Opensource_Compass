@@ -10,6 +10,7 @@ import (
 	"core-service/internal/orchestration"
 	"core-service/internal/preferences"
 	"core-service/internal/users"
+	"core-service/internal/watchlist"
 	"core-service/routes"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -54,9 +55,11 @@ func main() {
 
 	prefRepo := preferences.NewRepository(dbPool)
 	userRepo := users.NewRepository(dbPool)
+	watchlistRepo := watchlist.NewRepository(dbPool)
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
 	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo)
+	routes.RegisterWatchlistRoutes(mux, watchlistRepo)
 
 	// Wrap with CORS middleware
 	handler := corsMiddleware(mux)
