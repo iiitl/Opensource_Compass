@@ -10,9 +10,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func main(){
-	if err := godotenv.Load(); err != nil{
-		fmt.Println("Failed to load .env file")
+func main() {
+	// Load the root .env file from the project root
+	if err := godotenv.Load("../../.env"); err != nil {
+		fmt.Println("No .env file found at ../../.env, checking current directory")
+		if err := godotenv.Load(); err != nil {
+			fmt.Println("Failed to load .env file")
+		}
 	}
 
 	required := []string{
@@ -22,15 +26,15 @@ func main(){
 		"FRONTEND_URL",
 	}
 
-	for _, key := range required{
-		if os.Getenv(key) == ""{
+	for _, key := range required {
+		if os.Getenv(key) == "" {
 			log.Fatalf("Missing required env variable: %s", key)
 		}
 	}
 
 	router := gin.Default()
 
-	router.GET("/health", func(c *gin.Context){
+	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status": "auth-service alive",
 		})

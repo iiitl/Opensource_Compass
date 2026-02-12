@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/your-org/opensource-compass/ai-service/config"
 	"github.com/your-org/opensource-compass/ai-service/internal/analysis"
 	"github.com/your-org/opensource-compass/ai-service/internal/llm"
@@ -11,6 +12,12 @@ import (
 )
 
 func main() {
+	// Load the root .env file from the project root
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Println("No .env file found at ../../.env, checking current directory")
+		_ = godotenv.Load() // Fallback to local .env
+	}
+
 	cfg := config.Load()
 
 	// Initialize LLM client based on provider
