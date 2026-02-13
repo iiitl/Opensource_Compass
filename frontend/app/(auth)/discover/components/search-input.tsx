@@ -13,7 +13,7 @@ export default function SearchInput({ onSearch, className = "" }: SearchInputPro
   useEffect(() => {
     const timer = setTimeout(() => {
       onSearch(query);
-    }, 500); // 500ms debounce
+    }, 1000); // 1000ms debounce (increased from 500ms to reduce API calls)
 
     return () => clearTimeout(timer);
   }, [query, onSearch]);

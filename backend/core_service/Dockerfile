@@ -14,7 +14,9 @@ FROM alpine:latest
 WORKDIR /app
 
 COPY --from=builder /app/main .
+COPY --from=builder /app/main .
 COPY .env .
+COPY db/migrations ./db/migrations
 
 EXPOSE 8083
 

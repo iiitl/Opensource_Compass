@@ -2,13 +2,18 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useAuth } from "./auth-context";
+import toast from "react-hot-toast";
+import Link from "next/link";
 
 type Notification = {
   type: string;
   repo: string;
   issue_number: number;
+  issue_title?: string;
+  issue_url?: string;
   message: string;
   timestamp: Date;
+  id:string; // Unique identifier for each notification
 };
 
 type NotificationContextType = {
@@ -25,11 +30,38 @@ const NotificationContext = createContext<NotificationContextType>({
   isConnected: false,
 });
 
+const NOTIFICATIONS_KEY = "compass_notifications";
+
+function loadNotificationsFromStorage(): Notification[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+    if (!stored) return [];
+    const parsed = JSON.parse(stored);
+    return parsed.map((n: any) => ({
+      ...n,
+      timestamp: new Date(n.timestamp),
+    }));
+  } catch (err) {
+    console.error("Failed to load notifications from storage", err);
+    return [];
+  }
+}
+
+function saveNotificationsToStorage(notifications: Notification[]) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(notifications));
+  } catch (err) {
+    console.error("Failed to save notifications to storage", err);
+  }
+}
+
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>(loadNotificationsFromStorage);
 
   useEffect(() => {
     if (!user) {
@@ -58,28 +90,64 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     if (!userId) return;
 
     const wsUrl = `ws://localhost:8084/ws?user_id=${userId}`;
+    console.log(`NotificationService: Connecting to ${wsUrl}...`);
     const ws = new WebSocket(wsUrl);
 
+    ws.onerror = (error) => {
+        console.error("NotificationService: WebSocket error", error);
+    };
+
     ws.onopen = () => {
-      console.log("Connected to notification service");
+      console.log(`NotificationService: Connected for user ${userId}`);
       setIsConnected(true);
     };
 
     ws.onmessage = (event) => {
+      console.log("NotificationService: Received message", event.data);
       try {
         const data = JSON.parse(event.data);
         const newNotification: Notification = {
           ...data,
           timestamp: new Date(),
+          id: `${data.repo}-${data.issue_number}-${Date.now()}`,
         };
-        setNotifications((prev) => [newNotification, ...prev]);
         
-        // Show browser toast/notification if supported
-        if ("Notification" in window && Notification.permission === "granted") {
-            new Notification(`New Update in ${data.repo}`, {
-                body: data.message,
-            });
-        }
+        setNotifications((prev) => {
+          const updated = [newNotification, ...prev];
+          saveNotificationsToStorage(updated);
+          return updated;
+        });
+        
+        // Show react-hot-toast notification
+        const issueTitle = data.issue_title || `Issue #${data.issue_number}`;
+        const repoName = data.repo.split("/")[1] || data.repo;
+        
+        toast(
+          (t) => (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold">{repoName}</span>
+                {data.issue_url && (
+                  <a
+                    href={data.issue_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                    onClick={() => toast.dismiss(t.id)}
+                  >
+                    View Issue
+                  </a>
+                )}
+              </div>
+              <p className="text-xs text-gray-600">{issueTitle}</p>
+            </div>
+          ),
+          {
+            icon: "🔔",
+            duration: 5000,
+            position: "top-right",
+          }
+        );
       } catch (err) {
         console.error("Failed to parse notification", err);
       }
@@ -99,9 +167,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const markAllAsRead = () => {
-    // In a real app, we might send an API call to mark as read in DB.
-    // For MVP, just clearing local state or marking visually.
     setNotifications([]);
+    saveNotificationsToStorage([]);
   };
 
   return (

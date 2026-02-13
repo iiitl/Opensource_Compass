@@ -1,6 +1,9 @@
 package websocket
 
-import "sync"
+import (
+	"log"
+	"sync"
+)
 
 // Hub maintains the set of active clients and broadcasts messages to the
 // clients.
@@ -49,6 +52,7 @@ func (h *Hub) Run() {
 			h.mu.Lock()
 			h.clients[client] = true
 			h.userClients[client.UserID] = append(h.userClients[client.UserID], client)
+			log.Printf("Hub: Client registered. UserID: %s. Total clients for user: %d", client.UserID, len(h.userClients[client.UserID]))
 			h.mu.Unlock()
 
 		case client := <-h.unregister:
@@ -64,6 +68,7 @@ func (h *Hub) Run() {
 						break
 					}
 				}
+				log.Printf("Hub: Client unregistered. UserID: %s. Remaining clients for user: %d", client.UserID, len(h.userClients[client.UserID]))
 			}
 			h.mu.Unlock()
 
@@ -83,13 +88,18 @@ func (h *Hub) Run() {
 		case notif := <-h.SendToUser:
 			h.mu.RLock()
 			if clients, ok := h.userClients[notif.UserID]; ok {
+				log.Printf("Hub: Sending message to user %s (Clients: %d)", notif.UserID, len(clients))
 				for _, client := range clients {
 					select {
 					case client.Send <- notif.Message:
+						log.Printf("Hub: Sent to client %p", client)
 					default:
 						// Handle slow client?
+						log.Printf("Hub: Failed to send to client %p (buffer full?)", client)
 					}
 				}
+			} else {
+				log.Printf("Hub: User %s not connected. Message dropped.", notif.UserID)
 			}
 			h.mu.RUnlock()
 		}

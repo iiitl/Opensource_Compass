@@ -11,6 +11,9 @@ import {
   MobileNavMenu,
 } from "@/components/ui/resizable-navbar";
 import { useState } from "react";
+import { useAuth } from "@/contexts/auth-context";
+import { NotificationBell } from "@/components/notification-bell";
+import Link from "next/link";
 
 export default function NavbarDemo() {
   const navItems = [

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"core-service/internal/auth"
 	"core-service/internal/watchlist"
 )
 
@@ -11,21 +12,16 @@ type WatchlistRoutes struct {
 	repo *watchlist.Repository
 }
 
-func RegisterWatchlistRoutes(mux *http.ServeMux, repo *watchlist.Repository) {
+func RegisterWatchlistRoutes(mux *http.ServeMux, repo *watchlist.Repository, jwtSecret string) {
 	routes := &WatchlistRoutes{repo: repo}
 
-	mux.HandleFunc("/watchlist", routes.handleWatchlist)
-	mux.HandleFunc("/watchlist/check", routes.handleCheckStatus)
+	mux.Handle("/watchlist", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(routes.handleWatchlist)))
+	mux.Handle("/watchlist/check", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(routes.handleCheckStatus)))
 }
 
 func (h *WatchlistRoutes) handleWatchlist(w http.ResponseWriter, r *http.Request) {
-	// Extract user ID from context (set by auth middleware)
-	// For now, assuming middleware sets "user_id" in header or context.
-	// Since we don't have the context middleware code handy here,
-	// we will assume X-User-ID header is propagated by auth-service or gateway.
-	// NOTE: In production, use properly authenticated context.
-	userID := r.Header.Get("X-User-ID")
-	if userID == "" {
+	userID, ok := r.Context().Value(auth.UserIDKey).(string)
+	if !ok || userID == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
@@ -91,8 +87,8 @@ func (h *WatchlistRoutes) remove(w http.ResponseWriter, r *http.Request, userID 
 }
 
 func (h *WatchlistRoutes) handleCheckStatus(w http.ResponseWriter, r *http.Request) {
-	userID := r.Header.Get("X-User-ID")
-	if userID == "" {
+	userID, ok := r.Context().Value(auth.UserIDKey).(string)
+	if !ok || userID == "" {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}

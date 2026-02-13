@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -162,17 +163,80 @@ func (c *GitHubClient) FetchGoodFirstIssues(
 }
 
 func (c *GitHubClient) GetLatestIssueNumber(owner, name string) (int, error) {
-	// For MVP, we don't have a direct endpoint in github-service to get latest issue number.
-	// We will use FetchGoodFirstIssues and take the highest number, or better, add a new endpoint to github-service.
-	// But let's assume we can fetch issues and sort by created.
-	// Actually, github-service exposes /repos/:owner/:repo
-	// Let's use that to get open_issues_count as a proxy for "change"?
-	// No, open_issues_count decreases when issues close.
+	if c.baseURL == "" {
+		return 0, errors.New("github service url not configured")
+	}
 
-	// Real implementation should be: Call github-service /repos/:owner/:repo/issues?per_page=1
-	// But github-service doesn't expose generic issue search for a repo yet.
-	// It only exposes /issues/good-first.
+	endpoint := fmt.Sprintf("%s/repos/%s/%s/issues/latest", c.baseURL, owner, name)
 
-	// Let's just return 0 for now to make it compile, and TODO: update github-service.
-	return 0, nil
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		endpoint,
+		nil,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, errors.New("github service returned non-200 response")
+	}
+
+	var result struct {
+		Number int    `json:"number"`
+		Title  string `json:"url"`
+		URL    string `json:"url"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return 0, err
+	}
+
+	return result.Number, nil
+}
+
+// GetLatestIssue returns full details about the latest issue in a repository
+func (c *GitHubClient) GetLatestIssue(owner, name string) (number int, title string, url string, err error) {
+	if c.baseURL == "" {
+		return 0, "", "", errors.New("github service url not configured")
+	}
+
+	endpoint := fmt.Sprintf("%s/repos/%s/%s/issues/latest", c.baseURL, owner, name)
+
+	req, reqErr := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		endpoint,
+		nil,
+	)
+	if reqErr != nil {
+		return 0, "", "", reqErr
+	}
+
+	resp, respErr := c.httpClient.Do(req)
+	if respErr != nil {
+		return 0, "", "", respErr
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, "", "", errors.New("github service returned non-200 response")
+	}
+
+	var result struct {
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+		URL    string `json:"url"`
+	}
+	if decodeErr := json.NewDecoder(resp.Body).Decode(&result); decodeErr != nil {
+		return 0, "", "", decodeErr
+	}
+
+	return result.Number, result.Title, result.URL, nil
 }

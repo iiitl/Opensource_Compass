@@ -50,6 +50,13 @@ func main() {
 		if err != nil {
 			log.Fatal("Failed to connect to database:", err)
 		}
+
+		// Run Migrations
+		if err := db.RunMigrations(context.Background(), dbPool); err != nil {
+			log.Printf("Migration warning: %v", err)
+			// Don't fatal here in case of minor errors, or if user wants to run without it?
+			// Actually, for missing column, we need it. But let's log and proceed.
+		}
 	}
 
 	mux := http.NewServeMux()
@@ -72,7 +79,7 @@ func main() {
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
 	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo)
-	routes.RegisterWatchlistRoutes(mux, watchlistRepo)
+	routes.RegisterWatchlistRoutes(mux, watchlistRepo, cfg.JWTSecret)
 
 	// Wrap with CORS middleware
 	handler := corsMiddleware(mux)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { searchRepositories, searchRepositoriesByName, Repository } from "@/lib/api/github-service";
 import { getPreferences } from "@/lib/api/preferences";
 import DiscoverHero from "./components/discoverhero";
@@ -22,7 +22,7 @@ export default function DiscoverPage() {
   const [username, setUsername] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const loadRepos = async () => {
+  const loadRepos = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -45,9 +45,9 @@ export default function DiscoverPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleSearch = async (query: string) => {
+  const handleSearch = useCallback(async (query: string) => {
     setSearchQuery(query);
     if (!query) {
         loadRepos(); // reload default recommendations
@@ -66,7 +66,7 @@ export default function DiscoverPage() {
     } finally {
         setLoading(false);
     }
-  };
+  }, [loadRepos]);
 
   useEffect(() => {
     loadRepos();

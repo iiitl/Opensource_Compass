@@ -1,9 +1,14 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 	"strings"
 )
+
+type contextKey string
+
+const UserIDKey contextKey = "user_id"
 
 func JWTMiddleware(secret string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -16,12 +21,13 @@ func JWTMiddleware(secret string, next http.Handler) http.Handler {
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 
-		_, err := ExtractUserID(token, secret)
+		userID, err := ExtractUserID(token, secret)
 		if err != nil {
 			http.Error(w, "invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), UserIDKey, userID)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

@@ -1,14 +1,33 @@
 package routes
 
 import (
+	"encoding/json"
+	"fmt"
 	"github-service/internal/issues"
 	"github-service/internal/repos"
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
+
+var repoCache *repos.RepoCache
+
+func init() {
+	// Initialize cache with 5-minute TTL
+	repoCache = repos.NewRepoCache(5 * time.Minute)
+
+	// Start background cleanup goroutine
+	go func() {
+		ticker := time.NewTicker(10 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			repoCache.Clean()
+		}
+	}()
+}
 
 func RegisterGithubRoutes(router *gin.Engine) {
 	router.GET("/repos/search", func(c *gin.Context) {
@@ -44,7 +63,7 @@ func RegisterGithubRoutes(router *gin.Engine) {
 			return
 		}
 
-		repoList, err := repos.FetchRepos(languages, frameworks, domains, nameQuery, token)
+		repoList, err := repos.FetchRepos(languages, frameworks, domains, nameQuery, token, repoCache)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),
@@ -65,8 +84,9 @@ func RegisterGithubRoutes(router *gin.Engine) {
 				"description":      repo.Description,
 				"html_url":         repo.URL,
 				"stargazers_count": repo.Stars,
-				"language":         "", // Not provided by backend currently
+				"language":         repo.Language,
 				"updated_at":       repo.LastPushedAt,
+				"topics":           repo.Topics,
 			})
 		}
 
@@ -85,6 +105,71 @@ func RegisterGithubRoutes(router *gin.Engine) {
 		}
 
 		c.JSON(http.StatusOK, repository)
+	})
+
+	router.GET("/repos/:owner/:repo/issues/latest", func(c *gin.Context) {
+		owner := c.Param("owner")
+		repo := c.Param("repo")
+		token := os.Getenv("GITHUB_TOKEN")
+
+		if token == "" {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "GitHub token not configured",
+			})
+			return
+		}
+
+		// Call GitHub API to get latest issue
+		url := fmt.Sprintf("https://api.github.com/repos/%s/%s/issues?state=all&sort=created&direction=desc&per_page=1", owner, repo)
+		req, err := http.NewRequest("GET", url, nil)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		req.Header.Set("Authorization", "token "+token)
+		req.Header.Set("Accept", "application/vnd.github+json")
+
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("github api returned status: %d", resp.StatusCode),
+			})
+			return
+		}
+
+		var issues []struct {
+			Number  int    `json:"number"`
+			Title   string `json:"title"`
+			HTMLURL string `json:"html_url"`
+		}
+
+		if err := json.NewDecoder(resp.Body).Decode(&issues); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		if len(issues) == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"number": 0,
+				"title":  "",
+				"url":    "",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"number": issues[0].Number,
+			"title":  issues[0].Title,
+			"url":    issues[0].HTMLURL,
+		})
 	})
 
 	router.GET("/issues/good-first", func(c *gin.Context) {

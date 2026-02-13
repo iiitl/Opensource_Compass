@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { addToWatchlist, removeFromWatchlist, checkIsWatched } from "@/lib/api/watchlist";
-import { IconEye, IconEyeOff, IconLoader } from "@tabler/icons-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface WatchButtonProps {
@@ -59,11 +59,11 @@ export function WatchButton({ owner, name }: WatchButtonProps) {
       }`}
     >
       {loading ? (
-        <IconLoader className="w-4 h-4 animate-spin" />
+        <Loader2 className="w-4 h-4 animate-spin" />
       ) : isWatched ? (
-        <IconEyeOff className="w-4 h-4" />
+        <EyeOff className="w-4 h-4" />
       ) : (
-        <IconEye className="w-4 h-4" />
+        <Eye className="w-4 h-4" />
       )}
       {isWatched ? "Unwatch" : "Watch"}
     </button>

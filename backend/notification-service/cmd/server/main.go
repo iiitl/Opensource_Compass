@@ -45,14 +45,18 @@ func main() {
 			return
 		}
 
+		log.Printf("Received notify request for user: %s", userID)
+
 		var payload interface{}
 		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			log.Printf("Error decoding payload: %v", err)
 			http.Error(w, "Invalid body", http.StatusBadRequest)
 			return
 		}
 
 		msgBytes, err := json.Marshal(payload)
 		if err != nil {
+			log.Printf("Error marshaling payload: %v", err)
 			http.Error(w, "Failed to marshal payload", http.StatusInternalServerError)
 			return
 		}

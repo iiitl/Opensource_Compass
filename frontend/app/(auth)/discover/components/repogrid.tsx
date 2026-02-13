@@ -1,7 +1,7 @@
 "use client";
 
 import { Repository } from "@/lib/api/github-service";
-import { IconStar, IconGitFork, IconCircle, IconExternalLink } from "@tabler/icons-react";
+import { Star, GitFork, Circle, ExternalLink } from "lucide-react";
 import { WatchButton } from "@/components/watch-button";
 import Link from "next/link";
 
@@ -48,30 +48,35 @@ function RepoCard({ repo }: RepoCardProps) {
   };
 
   return (
-    <a
-      href={repo.html_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#30363d] rounded-xl p-6 hover:border-[#58a6ff] hover:shadow-lg hover:shadow-[#58a6ff]/10 transition-all duration-300 group relative overflow-hidden"
-    >
+    <div className="block bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#30363d] rounded-xl p-6 hover:border-[#58a6ff] hover:shadow-lg hover:shadow-[#58a6ff]/10 transition-all duration-300 group relative overflow-hidden">
       {/* Gradient overlay on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#58a6ff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#58a6ff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       
       <div className="relative z-10">
         {/* Header with external link */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <IconCircle className="h-4 w-4 text-[#8b949e] shrink-0" />
+              <Circle className="h-4 w-4 text-[#8b949e] shrink-0" />
               <span className="text-xs text-[#8b949e] truncate">{repo.owner}</span>
             </div>
-            <h3 className="text-lg font-bold text-[#58a6ff] group-hover:text-[#79c0ff] transition-colors truncate">
+            <a 
+              href={repo.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-lg font-bold text-[#58a6ff] group-hover:text-[#79c0ff] transition-colors truncate hover:underline block"
+            >
               {repo.name}
-            </h3>
+            </a>
           </div>
-          <div className="ml-3 p-2 rounded-lg bg-[#21262d] border border-[#30363d] group-hover:border-[#58a6ff] group-hover:bg-[#58a6ff]/10 transition-all">
-            <IconExternalLink className="h-4 w-4 text-[#8b949e] group-hover:text-[#58a6ff]" />
-          </div>
+          <a
+            href={repo.html_url}
+            target="_blank"
+            rel="noopener noreferrer" 
+            className="ml-3 p-2 rounded-lg bg-[#21262d] border border-[#30363d] group-hover:border-[#58a6ff] group-hover:bg-[#58a6ff]/10 transition-all block"
+          >
+            <ExternalLink className="h-4 w-4 text-[#8b949e] group-hover:text-[#58a6ff]" />
+          </a>
         </div>
 
         {/* Description */}
@@ -90,7 +95,7 @@ function RepoCard({ repo }: RepoCardProps) {
           {/* Stars */}
           {repo.stargazers_count !== undefined && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#21262d] border border-[#30363d]">
-              <IconStar className="h-3.5 w-3.5 text-[#f1e05a] fill-[#f1e05a]" />
+              <Star className="h-3.5 w-3.5 text-[#f1e05a] fill-[#f1e05a]" />
               <span className="text-xs font-semibold text-[#c9d1d9]">
                 {formatStars(repo.stargazers_count)}
               </span>
@@ -121,9 +126,9 @@ function RepoCard({ repo }: RepoCardProps) {
             rel="noopener noreferrer"
             className="text-xs text-[#58a6ff] hover:underline flex items-center gap-1"
           >
-            View Repository <IconExternalLink className="w-3 h-3" />
+            View Repository <ExternalLink className="w-3 h-3" />
           </a>
-          <div className="ml-auto">
+          <div className="ml-auto pointer-events-auto">
              <WatchButton owner={repo.owner} name={repo.name} />
           </div>
         </div>
@@ -147,6 +152,6 @@ function RepoCard({ repo }: RepoCardProps) {
           </div>
         )}
       </div>
-    </a>
+    </div>
   );
 }
