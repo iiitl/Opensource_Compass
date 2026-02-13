@@ -70,3 +70,33 @@ export async function fetchRepository(owner: string, repo: string): Promise<Repo
         throw error;
     }
 }
+
+export async function searchRepositoriesByName(query: string): Promise<Repository[]> {
+    try {
+        const token = localStorage.getItem('auth_token');
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const url = `/api/core/repos/search?q=${encodeURIComponent(query)}`;
+        console.log("Calling Core service:", url);
+
+        const response = await fetch(url, {
+            headers: headers
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to search repositories: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error searching repositories:', error);
+        throw error;
+    }
+}

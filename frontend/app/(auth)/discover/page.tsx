@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { searchRepositories, Repository } from "@/lib/api/github-service";
+import { searchRepositories, searchRepositoriesByName, Repository } from "@/lib/api/github-service";
 import { getPreferences } from "@/lib/api/preferences";
 import DiscoverHero from "./components/discoverhero";
+import SearchInput from "./components/search-input";
 import ActiveFilters from "./components/activefilters";
 import RepoGrid from "./components/repogrid";
 import SkeletonCard from "./components/skeletoncard";
@@ -19,6 +20,7 @@ export default function DiscoverPage() {
   const [topics, setTopics] = useState<string[]>([]);
   const [experienceLevel, setExperienceLevel] = useState<string>("Beginner");
   const [username, setUsername] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const loadRepos = async () => {
     try {
@@ -45,12 +47,35 @@ export default function DiscoverPage() {
     }
   };
 
+  const handleSearch = async (query: string) => {
+    setSearchQuery(query);
+    if (!query) {
+        loadRepos(); // reload default recommendations
+        return;
+    }
+    
+    try {
+        setLoading(true);
+        setError(null);
+        const results = await searchRepositoriesByName(query);
+        setRepos(results);
+    } catch (err: any) {
+        console.error("Failed to search repositories:", err);
+        setError("Failed to search repositories. Please try again.");
+        setRepos([]);
+    } finally {
+        setLoading(false);
+    }
+  };
+
   useEffect(() => {
     loadRepos();
   }, []);
 
   // Check if user has set preferences
   const hasPreferences = languages.length > 0 || topics.length > 0;
+  // Show filters only if not searching and has preferences
+  const showFilters = !searchQuery && hasPreferences;
 
   return (
     <div className="space-y-6">
@@ -62,8 +87,13 @@ export default function DiscoverPage() {
         isLoading={loading}
       />
 
+      {/* Search Input */}
+      <div className="max-w-2xl mx-auto px-4">
+        <SearchInput onSearch={handleSearch} />
+      </div>
+
       {/* Active Filters */}
-      {hasPreferences && !loading && (
+      {showFilters && !loading && (
         <ActiveFilters
           languages={languages}
           topics={topics}
