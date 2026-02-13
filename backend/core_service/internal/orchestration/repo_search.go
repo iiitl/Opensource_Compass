@@ -2,6 +2,7 @@ package orchestration
 
 import (
 	"context"
+	"core-service/internal/clients"
 	"errors"
 )
 
@@ -25,8 +26,6 @@ func (s *Service) SearchReposForUser(
 		languageQuery += l
 	}
 
-
-
 	domains := ExtractDomains(userCtx)
 	domainQuery := ""
 	for i, d := range domains {
@@ -40,7 +39,7 @@ func (s *Service) SearchReposForUser(
 		domainQuery = "backend"
 	}
 
-	repos, err := s.githubClient.SearchRepos(ctx, languageQuery, domainQuery, token)
+	repos, err := s.githubClient.SearchRepos(ctx, languageQuery, domainQuery, "", token)
 	if err != nil {
 		return nil, err
 	}
@@ -55,4 +54,16 @@ func (s *Service) SearchReposForUser(
 	}
 
 	return results, nil
+}
+
+func (s *Service) SearchRepositories(
+	ctx context.Context,
+	query string,
+	token string,
+) ([]clients.GitHubRepo, error) {
+	if s.githubClient == nil {
+		return nil, errors.New("github client not configured")
+	}
+
+	return s.githubClient.SearchRepos(ctx, "", "", query, token)
 }

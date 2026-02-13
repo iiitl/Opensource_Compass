@@ -67,6 +67,7 @@ func (c *GitHubClient) SearchRepos(
 	ctx context.Context,
 	languages string,
 	domains string,
+	nameQuery string,
 	token string,
 ) ([]GitHubRepo, error) {
 
@@ -79,6 +80,9 @@ func (c *GitHubClient) SearchRepos(
 	params := url.Values{}
 	params.Set("languages", languages)
 	params.Set("domains", domains)
+	if nameQuery != "" {
+		params.Set("q", nameQuery)
+	}
 
 	req, err := http.NewRequestWithContext(
 		ctx,

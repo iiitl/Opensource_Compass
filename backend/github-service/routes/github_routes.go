@@ -15,6 +15,11 @@ func RegisterGithubRoutes(router *gin.Engine) {
 		languagesParam := c.Query("languages")
 		frameworksParam := c.Query("frameworks")
 		domainsParam := c.Query("domains")
+		// Support both q and name for search query
+		nameQuery := c.Query("q")
+		if nameQuery == "" {
+			nameQuery = c.Query("name")
+		}
 
 		var languages []string
 		if languagesParam != "" {
@@ -39,7 +44,7 @@ func RegisterGithubRoutes(router *gin.Engine) {
 			return
 		}
 
-		repoList, err := repos.FetchRepos(languages, frameworks, domains, token)
+		repoList, err := repos.FetchRepos(languages, frameworks, domains, nameQuery, token)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),

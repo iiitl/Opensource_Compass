@@ -57,8 +57,12 @@ func buildQuery(prefix string, values []string) string {
 	return strings.Join(parts, " ")
 }
 
-func FetchRepos(languages []string, frameworks []string, domains []string, token string) ([]RepoDTO, error) {
+func FetchRepos(languages []string, frameworks []string, domains []string, nameQuery string, token string) ([]RepoDTO, error) {
 	queryParts := []string{}
+
+	if nameQuery != "" {
+		queryParts = append(queryParts, nameQuery+" in:name")
+	}
 
 	// Add languages to query (GitHub searches with implicit OR)
 	if q := buildQuery("language", languages); q != "" {
