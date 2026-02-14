@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"core-service/internal/auth"
+	"core-service/internal/clients"
 	"core-service/internal/users"
 )
 
@@ -23,6 +24,7 @@ func NewUserHandler(userRepo *users.Repository, jwtSecret string) *UserHandler {
 
 type SaveGitHubTokenRequest struct {
 	Token string `json:"token"`
+	Email string `json:"email"`
 }
 
 func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -37,30 +39,79 @@ func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse URL path to get user ID and action
-	// Expected: /users/{user_id}/github-token
+	// Expected: /users/{user_id}/github-token or /users/{user_id}/sync-email
 	path := strings.TrimPrefix(r.URL.Path, "/users/")
 	parts := strings.Split(path, "/")
 
-	if len(parts) < 2 || parts[1] != "github-token" {
+	if len(parts) < 2 {
 		http.Error(w, "invalid path", http.StatusNotFound)
 		return
 	}
 
 	targetUserID := parts[0]
+	action := parts[1]
 
-	// Only allow users to update their own token
+	// Only allow users to update their own data
 	if targetUserID != requestingUserID {
-		http.Error(w, "forbidden: can only update your own token", http.StatusForbidden)
+		http.Error(w, "forbidden: can only access your own data", http.StatusForbidden)
 		return
 	}
 
-	if r.Method == http.MethodPost {
-		h.SaveGitHubToken(w, r, targetUserID)
-	} else if r.Method == http.MethodGet {
-		h.GetGitHubToken(w, r, targetUserID)
+	if action == "github-token" {
+		if r.Method == http.MethodPost {
+			h.SaveGitHubToken(w, r, targetUserID)
+		} else if r.Method == http.MethodGet {
+			h.GetGitHubToken(w, r, targetUserID)
+		} else {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		}
+	} else if action == "sync-email" && r.Method == http.MethodPost {
+		h.SyncUserEmail(w, r, targetUserID)
 	} else {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "not found", http.StatusNotFound)
 	}
+}
+
+func (h *UserHandler) SyncUserEmail(w http.ResponseWriter, r *http.Request, userID string) {
+	ctx := r.Context()
+
+	// get Token
+	token, err := h.userRepo.GetGitHubToken(ctx, userID)
+	if err != nil {
+		http.Error(w, "failed to get github token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if token == "" {
+		http.Error(w, "github token not found for user", http.StatusNotFound)
+		return
+	}
+
+	// Create client locally (or inject it properly, but for now local is fine since it's a simple client)
+	// We need to fetch email
+	client := clients.NewGitHubClient("") // Base URL doesn't matter for this direct call
+	email, err := client.FetchUserEmail(token)
+	if err != nil {
+		http.Error(w, "failed to fetch email from github: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if email == "" {
+		http.Error(w, "no email found in github account", http.StatusNotFound)
+		return
+	}
+
+	if err := h.userRepo.UpdateEmail(ctx, userID, email); err != nil {
+		http.Error(w, "failed to save email: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Email synced successfully",
+		"email":   email,
+	})
 }
 
 func (h *UserHandler) SaveGitHubToken(w http.ResponseWriter, r *http.Request, userID string) {
@@ -83,10 +134,19 @@ func (h *UserHandler) SaveGitHubToken(w http.ResponseWriter, r *http.Request, us
 		return
 	}
 
+	// Update email if provided
+	if req.Email != "" {
+		if err := h.userRepo.UpdateEmail(ctx, userID, req.Email); err != nil {
+			// Log error but don't fail the request
+			http.Error(w, "failed to save email: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "GitHub token saved successfully",
+		"message": "User data saved successfully",
 	})
 }
 

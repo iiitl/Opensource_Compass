@@ -65,3 +65,24 @@ export async function getPreferences(): Promise<UserPreferences> {
     }
 }
 
+
+export async function syncEmail(userId: string): Promise<{ message: string; email: string }> {
+    try {
+        const response = await fetch(`/api/core/users/${userId}/sync-email`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to sync email: ${errorText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('❌ Error syncing email:', error);
+        throw error;
+    }
+}

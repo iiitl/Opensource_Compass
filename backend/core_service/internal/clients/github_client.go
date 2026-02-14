@@ -285,3 +285,56 @@ func (c *GitHubClient) GetLatestIssue(owner, name string) (number int, title str
 
 	return result.Number, result.Title, result.URL, nil
 }
+
+// FetchUserEmail fetches the primary email for the user associated with the token
+func (c *GitHubClient) FetchUserEmail(token string) (string, error) {
+	if token == "" {
+		return "", errors.New("token is empty")
+	}
+
+	req, err := http.NewRequest(
+		http.MethodGet,
+		"https://api.github.com/user/emails",
+		nil,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Authorization", "token "+token)
+
+	// We use the default HTTP client directly here because we're calling GitHub API directly
+	// instead of the GitHub Service which might not proxy /user/endpoints correctly or optimally
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("github api returned status: %d", resp.StatusCode)
+	}
+
+	var emails []struct {
+		Email   string `json:"email"`
+		Primary bool   `json:"primary"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&emails); err != nil {
+		return "", err
+	}
+
+	// Find primary email
+	for _, email := range emails {
+		if email.Primary {
+			return email.Email, nil
+		}
+	}
+
+	// If no primary, return first email
+	if len(emails) > 0 {
+		return emails[0].Email, nil
+	}
+
+	return "", nil
+}

@@ -17,29 +17,35 @@ func NewRepository(db *pgxpool.Pool) *Repository {
 
 func (r *Repository) Create(ctx context.Context, user *User) error {
 	query := `
-		INSERT INTO users (id, github_username, experience_level)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (id, github_username, email, experience_level)
+		VALUES ($1, $2, $3, $4)
 	`
-	_, err := r.db.Exec(ctx, query, user.ID, user.GitHubUsername, user.ExperienceLevel)
+	_, err := r.db.Exec(ctx, query, user.ID, user.GitHubUsername, user.Email, user.ExperienceLevel)
 	return err
 }
 
 func (r *Repository) GetByID(ctx context.Context, id string) (*User, error) {
 	query := `
-		SELECT id, github_username, experience_level, created_at
+		SELECT id, github_username, email, experience_level, created_at
 		FROM users
 		WHERE id = $1
 	`
 
 	var user User
+	var email sql.NullString
 	err := r.db.QueryRow(ctx, query, id).Scan(
 		&user.ID,
 		&user.GitHubUsername,
+		&email,
 		&user.ExperienceLevel,
 		&user.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
+	}
+
+	if email.Valid {
+		user.Email = email.String
 	}
 
 	return &user, nil
@@ -95,4 +101,15 @@ func (r *Repository) GetGitHubToken(ctx context.Context, userID string) (string,
 	}
 
 	return token.String, nil
+}
+
+// UpdateEmail updates the email for a user
+func (r *Repository) UpdateEmail(ctx context.Context, userID string, email string) error {
+	query := `
+		UPDATE users
+		SET email = $1
+		WHERE id = $2
+	`
+	_, err := r.db.Exec(ctx, query, email, userID)
+	return err
 }

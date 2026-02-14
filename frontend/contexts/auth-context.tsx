@@ -9,8 +9,9 @@ interface AuthContextType {
   userId: string | null;
   username: string | null;
   avatar: string | null;
+  email: string | null;
   token: string | null;
-  user: { username: string; avatar: string | null; id?: string } | null;
+  user: { username: string; avatar: string | null; email: string | null; id?: string } | null;
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -21,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [username, setUsername] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -35,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserId(data.id);
         setUsername(data.username);
         setAvatar(data.avatar);
-        setUserId(data.id); // Set real user ID
+        setEmail(data.email);
         
         if (data.token) setToken(data.token);
         
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserId(null);
         setUsername(null);
         setAvatar(null);
+        setEmail(null);
         setUserId(null);
         setToken(null);
         setIsAuthenticated(false);
@@ -66,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUserId(null);
       setUsername(null);
       setAvatar(null);
-      setUserId(null); // Clear ID
+      setEmail(null);
       setIsAuthenticated(false);
       router.push('/');
     } catch (error) {
@@ -82,8 +85,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         userId,
         username,
         avatar,
+        email,
         token,
-        user: username ? { username, avatar, id: userId || username } : null,
+        user: username ? { username, avatar, email, id: userId || username } : null,
         checkAuth,
         logout,
       }}

@@ -4,16 +4,19 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { getPreferences, UserPreferences } from "@/lib/api/preferences";
 import { useRouter } from "next/navigation";
-import { Github, LogOut, Settings, Loader2, ExternalLink, Bell } from "lucide-react";
+import { Github, LogOut, Settings, Loader2, ExternalLink, Bell, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { getWatchlist, WatchedRepo } from "@/lib/api/watchlist";
 import { WatchButton } from "@/components/watch-button";
+import { syncEmail } from "@/lib/api/preferences";
+import { toast } from "react-hot-toast";
 
 export default function ProfilePage() {
-  const { username, avatar, logout, isLoading: authLoading } = useAuth();
+  const { user, username, avatar, logout, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
 
   useEffect(() => {
     const loadPreferences = async () => {
@@ -86,6 +89,11 @@ export default function ProfilePage() {
                   Connected via GitHub
                 </span>
               </div>
+              {user?.email && (
+                <div className="text-sm text-[#8b949e] mt-0.5">
+                  {user.email}
+                </div>
+              )}
               {preferences?.experienceLevel && (
                 <div className="mt-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#238636]/10 border border-[#238636]/20 text-[#3fb950]">
@@ -195,6 +203,25 @@ export default function ProfilePage() {
               OAuth access token active
             </p>
           </div>
+          <button
+            onClick={async () => {
+              if (!user?.id) return;
+              setSyncing(true);
+              try {
+                const result = await syncEmail(user.id);
+                toast.success(`Email synced: ${result.email}`);
+              } catch (error) {
+                toast.error("Failed to sync email. Please try logging in again.");
+              } finally {
+                setSyncing(false);
+              }
+            }}
+            disabled={syncing}
+            className="ml-auto inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#21262d] border border-[#30363d] text-xs text-[#c9d1d9] hover:bg-[#30363d] transition-colors disabled:opacity-50"
+          >
+            <RefreshCw className={`h-3 w-3 ${syncing ? "animate-spin" : ""}`} />
+            {syncing ? "Syncing..." : "Sync Email"}
+          </button>
         </div>
       </div>
 
