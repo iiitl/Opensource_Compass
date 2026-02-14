@@ -16,7 +16,10 @@ services:
       - key: FRONTEND_URL
         sync: false
       - key: CORE_SERVICE_URL
-        value: http://core-service:10000
+        fromService:
+          type: web
+          name: core-service
+          property: url
 
   # Core Service
   - type: web
@@ -31,11 +34,20 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: GITHUB_SERVICE_URL
-        value: http://github-service:10000
+        fromService:
+          type: web
+          name: github-service
+          property: url
       - key: AI_SERVICE_URL
-        value: http://ai-service:10000
+        fromService:
+          type: web
+          name: ai-service
+          property: url
       - key: NOTIFICATION_SERVICE_URL
-        value: http://notification-service:10000
+        fromService:
+          type: web
+          name: notification-service
+          property: url
 
   # GitHub Service (Public for Vercel)
   - type: web
