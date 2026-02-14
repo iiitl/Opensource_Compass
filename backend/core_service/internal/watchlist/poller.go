@@ -9,7 +9,7 @@ import (
 type Poller struct {
 	repo         *Repository
 	githubClient GitHubClient
-	notifier     Notifier
+	notifiers    []Notifier // Support multiple notifiers
 	interval     time.Duration
 }
 
@@ -22,11 +22,11 @@ type Notifier interface {
 	NotifyUser(userID string, payload interface{}) error
 }
 
-func NewPoller(repo *Repository, gh GitHubClient, notifier Notifier, interval time.Duration) *Poller {
+func NewPoller(repo *Repository, gh GitHubClient, notifiers []Notifier, interval time.Duration) *Poller {
 	return &Poller{
 		repo:         repo,
 		githubClient: gh,
-		notifier:     notifier,
+		notifiers:    notifiers,
 		interval:     interval,
 	}
 }
@@ -80,7 +80,7 @@ func (p *Poller) poll(ctx context.Context) {
 				log.Printf("Poller: Error updating last checked for %s/%s: %v", entry.RepoOwner, entry.RepoName, err)
 			}
 
-			// Send notification with issue details
+			// Send notification with issue details via all notifiers
 			payload := map[string]interface{}{
 				"type":         "new_issue",
 				"repo":         entry.RepoOwner + "/" + entry.RepoName,
@@ -89,10 +89,13 @@ func (p *Poller) poll(ctx context.Context) {
 				"issue_url":    issueURL,
 				"message":      "New issue detected!",
 			}
-			if err := p.notifier.NotifyUser(entry.UserID, payload); err != nil {
-				log.Printf("Poller: Error notifying user %s: %v", entry.UserID, err)
-			} else {
-				log.Printf("Poller: Successfully notified user %s", entry.UserID)
+
+			for _, notifier := range p.notifiers {
+				if err := notifier.NotifyUser(entry.UserID, payload); err != nil {
+					log.Printf("Poller: Error notifying user %s via notifier: %v", entry.UserID, err)
+				} else {
+					log.Printf("Poller: Successfully notified user %s", entry.UserID)
+				}
 			}
 		} else {
 			log.Printf("Poller: No new issues for %s/%s", entry.RepoOwner, entry.RepoName)

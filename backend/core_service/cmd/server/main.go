@@ -66,11 +66,14 @@ func main() {
 	userRepo := users.NewRepository(dbPool)
 	watchlistRepo := watchlist.NewRepository(dbPool)
 
-	// Initialize Notification Service Notifier
-	notifier := watchlist.NewNotifier(cfg.NotificationSvcURL)
+	// Initialize Notification Service Notifier (WebSocket)
+	wsNotifier := watchlist.NewNotifier(cfg.NotificationSvcURL)
 
-	// Initialize Poller (runs every 2 minutes)
-	poller := watchlist.NewPoller(watchlistRepo, githubClient, notifier, 2*time.Minute)
+	// Initialize Email Notifier
+	emailNotifier := watchlist.NewEmailNotifier(userRepo)
+
+	// Initialize Poller (runs every 2 minutes) with both notifiers
+	poller := watchlist.NewPoller(watchlistRepo, githubClient, []watchlist.Notifier{wsNotifier, emailNotifier}, 2*time.Minute)
 
 	// Start Poller in background
 	ctx := context.Background() // TODO: Use proper context with cancellation on shutdown
