@@ -32,17 +32,17 @@ services:
         fromService:
           type: web
           name: github-service
-          property: host
+          property: url
       - key: AI_SERVICE_URL
         fromService:
           type: web
           name: ai-service
-          property: host
+          property: url
       - key: NOTIFICATION_SERVICE_URL
         fromService:
           type: web
           name: notification-service
-          property: host
+          property: url
 
   # GitHub Service (Public for Vercel)
   - type: web
