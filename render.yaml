@@ -4,7 +4,7 @@ services:
     name: auth-service
     env: docker
     dockerContext: ./backend/auth-service
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./backend/auth-service/Dockerfile
     plan: free
     envVars:
       - key: GITHUB_CLIENT_ID
@@ -21,7 +21,7 @@ services:
     name: core-service
     env: docker
     dockerContext: ./backend/core_service
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./backend/core_service/Dockerfile
     plan: free
     envVars:
       - key: DATABASE_URL
@@ -49,7 +49,7 @@ services:
     name: github-service
     env: docker
     dockerContext: ./backend/github-service
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./backend/github-service/Dockerfile
     plan: free
     envVars:
       - key: GITHUB_TOKEN
@@ -60,7 +60,7 @@ services:
     name: ai-service
     env: docker
     dockerContext: ./backend/ai-service
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./backend/ai-service/Dockerfile
     plan: free
     envVars:
       - key: GEMINI_API_KEY
@@ -77,6 +77,6 @@ services:
     name: notification-service
     env: docker
     dockerContext: ./backend/notification-service
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./backend/notification-service/Dockerfile
     plan: free
     envVars: []
