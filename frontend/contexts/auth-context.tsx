@@ -31,7 +31,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const checkAuth = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch('/api/auth/me'); // Proxied to backend
+      
+      // Check for token in URL (from OAuth redirect)
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const urlToken = params.get('token');
+        if (urlToken) {
+           localStorage.setItem('auth_token', urlToken);
+           setToken(urlToken);
+           // Clear token from URL
+           window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+
+      const storedToken = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+      if (storedToken) setToken(storedToken);
+
+      const headers: HeadersInit = {};
+      if (storedToken) {
+          headers['Authorization'] = `Bearer ${storedToken}`;
+      }
+
+      const res = await fetch('/api/auth/me', { headers }); // Proxied to backend with header
       if (res.ok) {
         const data = await res.json();
         setUserId(data.id);
@@ -39,10 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAvatar(data.avatar);
         setEmail(data.email);
         
-        if (data.token) setToken(data.token);
+        // Ensure token is consistent
+        if (data.token) {
+            setToken(data.token);
+            localStorage.setItem('auth_token', data.token);
+        }
         
         setIsAuthenticated(true);
       } else {
+        // If 401, clear storage
+        localStorage.removeItem('auth_token');
         setUserId(null);
         setUsername(null);
         setAvatar(null);

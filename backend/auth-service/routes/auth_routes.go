@@ -72,14 +72,22 @@ func RegisterAuthRoutes(r *gin.Engine) {
 		// Save GitHub token and email to core_service in background
 		go saveUserDataToCore(userID, accessToken, userEmail, jwtToken)
 
-		// Redirect to frontend success page without sensitive data
-		redirect := os.Getenv("FRONTEND_URL") + "/auth/success"
+		// Redirect to frontend success page with token
+		redirect := fmt.Sprintf("%s/auth/success?token=%s", os.Getenv("FRONTEND_URL"), jwtToken)
 		c.Redirect(http.StatusTemporaryRedirect, redirect)
 	})
 
 	r.GET("/auth/me", func(c *gin.Context) {
 		tokenString, err := c.Cookie("auth_token")
-		if err != nil {
+		if err != nil || tokenString == "" {
+			// Try Authorization header
+			authHeader := c.GetHeader("Authorization")
+			if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+				tokenString = authHeader[7:]
+			}
+		}
+
+		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "No auth token"})
 			return
 		}
