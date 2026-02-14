@@ -29,11 +29,20 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: GITHUB_SERVICE_URL
-        value: http://github-service:10000
+        fromService:
+          type: web
+          name: github-service
+          property: host
       - key: AI_SERVICE_URL
-        value: http://ai-service:10000
+        fromService:
+          type: web
+          name: ai-service
+          property: host
       - key: NOTIFICATION_SERVICE_URL
-        value: http://notification-service:10000
+        fromService:
+          type: web
+          name: notification-service
+          property: host
 
   # GitHub Service (Public for Vercel)
   - type: web
