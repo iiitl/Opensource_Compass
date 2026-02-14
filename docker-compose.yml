@@ -1,5 +1,3 @@
-
-
 services:
   # Check if postgres service is still needed.
   # User is using Supabase, but keeping local postgres might be useful for offline dev?
@@ -20,7 +18,7 @@ services:
   #     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
   core_service:
-    build: 
+    build:
       context: ./backend/core_service
     container_name: compass_core
     ports:
@@ -70,3 +68,12 @@ services:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - LLM_PROVIDER=${LLM_PROVIDER}
       - LLM_MODEL=${LLM_MODEL}
+
+  notification-service:
+    build:
+      context: ./backend/notification-service
+    container_name: compass_notification
+    ports:
+      - "8084:8084"
+    environment:
+      - PORT=8084

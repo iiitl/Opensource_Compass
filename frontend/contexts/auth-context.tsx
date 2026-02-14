@@ -8,7 +8,8 @@ interface AuthContextType {
   isLoading: boolean;
   username: string | null;
   avatar: string | null;
-  user: { username: string; avatar: string | null } | null;
+  token: string | null;
+  user: { username: string; avatar: string | null; id?: string } | null;
   checkAuth: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -18,6 +19,8 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [username, setUsername] = useState<string | null>(null);
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null); // NEW
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
@@ -30,10 +33,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         setUsername(data.username);
         setAvatar(data.avatar);
+        setUserId(data.id); // Set real user ID
+        
+        if (data.token) setToken(data.token);
+        
         setIsAuthenticated(true);
       } else {
         setUsername(null);
         setAvatar(null);
+        setUserId(null);
+        setToken(null);
         setIsAuthenticated(false);
       }
     } catch (error) {
@@ -53,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUsername(null);
       setAvatar(null);
+      setUserId(null); // Clear ID
       setIsAuthenticated(false);
       router.push('/');
     } catch (error) {
@@ -67,7 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         username,
         avatar,
-        user: username ? { username, avatar } : null,
+        token,
+        user: username ? { username, avatar, id: userId || username } : null,
         checkAuth,
         logout,
       }}

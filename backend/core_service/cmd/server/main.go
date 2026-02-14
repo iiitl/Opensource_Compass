@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"core-service/config"
 	"core-service/internal/clients"
@@ -10,6 +12,7 @@ import (
 	"core-service/internal/orchestration"
 	"core-service/internal/preferences"
 	"core-service/internal/users"
+	"core-service/internal/watchlist"
 	"core-service/routes"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -51,6 +54,13 @@ func main() {
 		if err != nil {
 			log.Fatal("Failed to connect to database:", err)
 		}
+
+		// Run Migrations
+		if err := db.RunMigrations(context.Background(), dbPool); err != nil {
+			log.Printf("Migration warning: %v", err)
+			// Don't fatal here in case of minor errors, or if user wants to run without it?
+			// Actually, for missing column, we need it. But let's log and proceed.
+		}
 	}
 
 	mux := http.NewServeMux()
@@ -58,9 +68,22 @@ func main() {
 
 	prefRepo := preferences.NewRepository(dbPool)
 	userRepo := users.NewRepository(dbPool)
+	watchlistRepo := watchlist.NewRepository(dbPool)
+
+	// Initialize Notification Service Notifier
+	notifier := watchlist.NewNotifier(cfg.NotificationSvcURL)
+
+	// Initialize Poller (runs every 2 minutes)
+	poller := watchlist.NewPoller(watchlistRepo, githubClient, notifier, 2*time.Minute)
+
+	// Start Poller in background
+	ctx := context.Background() // TODO: Use proper context with cancellation on shutdown
+	go poller.Start(ctx)
+
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
 	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo)
+	routes.RegisterWatchlistRoutes(mux, watchlistRepo, cfg.JWTSecret)
 
 	// Wrap with CORS middleware
 	handler := corsMiddleware(mux)

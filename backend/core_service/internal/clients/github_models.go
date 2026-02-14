@@ -9,11 +9,18 @@ type GitHubIssue struct {
 }
 
 type GitHubRepo struct {
-	FullName     string `json:"full_name"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Stars        int    `json:"stars"`
-	URL          string `json:"url"`
-	LastPushedAt string `json:"last_pushed_at"`
-	OpenIssues   int    `json:"open_issues"`
+	Owner           string   `json:"owner"`
+	FullName        string   `json:"full_name"`
+	Name            string   `json:"name"`
+	Description     string   `json:"description"`
+	HTMLURL         string   `json:"html_url"`
+	StargazersCount int      `json:"stargazers_count"`
+	Language        string   `json:"language"`
+	UpdatedAt       string   `json:"updated_at"`
+	Topics          []string `json:"topics"`
+	// Legacy fields for backward compatibility
+	Stars        int    `json:"stars,omitempty"`
+	URL          string `json:"url,omitempty"`
+	LastPushedAt string `json:"last_pushed_at,omitempty"`
+	OpenIssues   int    `json:"open_issues,omitempty"`
 }

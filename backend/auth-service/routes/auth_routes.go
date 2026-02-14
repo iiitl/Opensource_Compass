@@ -38,7 +38,14 @@ func RegisterAuthRoutes(r *gin.Engine) {
 			return
 		}
 
-		userID := fmt.Sprintf("%v", user["id"])
+		// Handle ID which might be float64 from JSON
+		var userID string
+		if idFloat, ok := user["id"].(float64); ok {
+			userID = fmt.Sprintf("%.0f", idFloat)
+		} else {
+			userID = fmt.Sprintf("%v", user["id"])
+		}
+
 		userLogin := fmt.Sprintf("%v", user["login"])
 		userAvatar := fmt.Sprintf("%v", user["avatar_url"])
 
@@ -81,6 +88,7 @@ func RegisterAuthRoutes(r *gin.Engine) {
 			"id":       claims["user_id"],
 			"username": claims["username"],
 			"avatar":   claims["avatar"],
+			"token":    tokenString,
 		})
 	})
 

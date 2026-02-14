@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"time"
@@ -67,6 +68,7 @@ func (c *GitHubClient) SearchRepos(
 	ctx context.Context,
 	languages string,
 	domains string,
+	nameQuery string,
 	token string,
 ) ([]GitHubRepo, error) {
 
@@ -79,6 +81,9 @@ func (c *GitHubClient) SearchRepos(
 	params := url.Values{}
 	params.Set("languages", languages)
 	params.Set("domains", domains)
+	if nameQuery != "" {
+		params.Set("q", nameQuery)
+	}
 
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -155,4 +160,83 @@ func (c *GitHubClient) FetchGoodFirstIssues(
 	}
 
 	return issues, nil
+}
+
+func (c *GitHubClient) GetLatestIssueNumber(owner, name string) (int, error) {
+	if c.baseURL == "" {
+		return 0, errors.New("github service url not configured")
+	}
+
+	endpoint := fmt.Sprintf("%s/repos/%s/%s/issues/latest", c.baseURL, owner, name)
+
+	req, err := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		endpoint,
+		nil,
+	)
+	if err != nil {
+		return 0, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, errors.New("github service returned non-200 response")
+	}
+
+	var result struct {
+		Number int    `json:"number"`
+		Title  string `json:"url"`
+		URL    string `json:"url"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return 0, err
+	}
+
+	return result.Number, nil
+}
+
+// GetLatestIssue returns full details about the latest issue in a repository
+func (c *GitHubClient) GetLatestIssue(owner, name string) (number int, title string, url string, err error) {
+	if c.baseURL == "" {
+		return 0, "", "", errors.New("github service url not configured")
+	}
+
+	endpoint := fmt.Sprintf("%s/repos/%s/%s/issues/latest", c.baseURL, owner, name)
+
+	req, reqErr := http.NewRequestWithContext(
+		context.Background(),
+		http.MethodGet,
+		endpoint,
+		nil,
+	)
+	if reqErr != nil {
+		return 0, "", "", reqErr
+	}
+
+	resp, respErr := c.httpClient.Do(req)
+	if respErr != nil {
+		return 0, "", "", respErr
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return 0, "", "", errors.New("github service returned non-200 response")
+	}
+
+	var result struct {
+		Number int    `json:"number"`
+		Title  string `json:"title"`
+		URL    string `json:"url"`
+	}
+	if decodeErr := json.NewDecoder(resp.Body).Decode(&result); decodeErr != nil {
+		return 0, "", "", decodeErr
+	}
+
+	return result.Number, result.Title, result.URL, nil
 }

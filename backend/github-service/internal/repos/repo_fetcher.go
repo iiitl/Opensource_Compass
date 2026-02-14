@@ -1,22 +1,27 @@
 package repos
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 )
 
 type RepoDTO struct {
-	FullName     string `json:"full_name"`
-	Name         string `json:"name"`
-	Description  string `json:"description"`
-	Stars        int    `json:"stars"`
-	URL          string `json:"url"`
-	LastPushedAt string `json:"last_pushed_at"`
-	OpenIssues   int    `json:"open_issues"`
+	FullName     string   `json:"full_name"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	Stars        int      `json:"stars"`
+	URL          string   `json:"url"`
+	LastPushedAt string   `json:"last_pushed_at"`
+	OpenIssues   int      `json:"open_issues"`
+	Language     string   `json:"language"`
+	Topics       []string `json:"topics"`
 }
 
 // Map user-friendly domain names to GitHub topics
@@ -57,8 +62,52 @@ func buildQuery(prefix string, values []string) string {
 	return strings.Join(parts, " ")
 }
 
-func FetchRepos(languages []string, frameworks []string, domains []string, token string) ([]RepoDTO, error) {
+// generateCacheKey creates a unique key from query parameters
+func generateCacheKey(languages, frameworks, domains []string, nameQuery string) string {
+	// Sort slices to ensure same key for same params regardless of order
+	sortedLangs := make([]string, len(languages))
+	copy(sortedLangs, languages)
+	sort.Strings(sortedLangs)
+
+	sortedFrameworks := make([]string, len(frameworks))
+	copy(sortedFrameworks, frameworks)
+	sort.Strings(sortedFrameworks)
+
+	sortedDomains := make([]string, len(domains))
+	copy(sortedDomains, domains)
+	sort.Strings(sortedDomains)
+
+	// Create string representation
+	key := fmt.Sprintf("l:%s|f:%s|d:%s|n:%s",
+		strings.Join(sortedLangs, ","),
+		strings.Join(sortedFrameworks, ","),
+		strings.Join(sortedDomains, ","),
+		nameQuery,
+	)
+
+	// Hash the key to keep it short
+	hash := sha256.Sum256([]byte(key))
+	return hex.EncodeToString(hash[:])
+}
+
+func FetchRepos(languages []string, frameworks []string, domains []string, nameQuery string, token string, cache *RepoCache) ([]RepoDTO, error) {
+	// Generate cache key
+	cacheKey := generateCacheKey(languages, frameworks, domains, nameQuery)
+
+	// Check cache first
+	if cache != nil {
+		if cached, found := cache.Get(cacheKey); found {
+			log.Printf("Cache hit for query, returning %d cached repositories", len(cached))
+			return cached, nil
+		}
+		log.Println("Cache miss, fetching from GitHub API")
+	}
+
 	queryParts := []string{}
+
+	if nameQuery != "" {
+		queryParts = append(queryParts, nameQuery+" in:name")
+	}
 
 	// Add languages to query (GitHub searches with implicit OR)
 	if q := buildQuery("language", languages); q != "" {
@@ -113,14 +162,15 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 
 	var raw struct {
 		Items []struct {
-			FullName        string `json:"full_name"`
-			Name            string `json:"name"`
-			Description     string `json:"description"`
-			Stars           int    `json:"stargazers_count"`
-			HTMLURL         string `json:"html_url"`
-			PushedAt        string `json:"pushed_at"`
-			OpenIssuesCount int    `json:"open_issues_count"`
-			Language        string `json:"language"`
+			FullName        string   `json:"full_name"`
+			Name            string   `json:"name"`
+			Description     string   `json:"description"`
+			Stars           int      `json:"stargazers_count"`
+			HTMLURL         string   `json:"html_url"`
+			PushedAt        string   `json:"pushed_at"`
+			OpenIssuesCount int      `json:"open_issues_count"`
+			Language        string   `json:"language"`
+			Topics          []string `json:"topics"`
 		} `json:"items"`
 		TotalCount int `json:"total_count"`
 	}
@@ -142,10 +192,19 @@ func FetchRepos(languages []string, frameworks []string, domains []string, token
 			URL:          r.HTMLURL,
 			LastPushedAt: r.PushedAt,
 			OpenIssues:   r.OpenIssuesCount,
+			Language:     r.Language,
+			Topics:       r.Topics,
 		})
 	}
 
 	log.Printf("Returning %d repositories to client", len(repos))
+
+	// Store in cache before returning
+	if cache != nil {
+		cache.Set(cacheKey, repos)
+		log.Println("Stored results in cache")
+	}
+
 	return repos, nil
 }
 
@@ -173,13 +232,15 @@ func FetchRepo(owner string, repo string, token string) (*RepoDTO, error) {
 	}
 
 	var raw struct {
-		FullName        string `json:"full_name"`
-		Name            string `json:"name"`
-		Description     string `json:"description"`
-		Stars           int    `json:"stargazers_count"`
-		HTMLURL         string `json:"html_url"`
-		PushedAt        string `json:"pushed_at"`
-		OpenIssuesCount int    `json:"open_issues_count"`
+		FullName        string   `json:"full_name"`
+		Name            string   `json:"name"`
+		Description     string   `json:"description"`
+		Stars           int      `json:"stargazers_count"`
+		HTMLURL         string   `json:"html_url"`
+		PushedAt        string   `json:"pushed_at"`
+		OpenIssuesCount int      `json:"open_issues_count"`
+		Language        string   `json:"language"`
+		Topics          []string `json:"topics"`
 	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
@@ -188,12 +249,14 @@ func FetchRepo(owner string, repo string, token string) (*RepoDTO, error) {
 
 	repoDto := &RepoDTO{
 		FullName:     raw.FullName,
-		Name:         raw.Name, // This might need adjustment if Name is not directly in raw or if we want just the repo name
+		Name:         raw.Name,
 		Description:  raw.Description,
 		Stars:        raw.Stars,
 		URL:          raw.HTMLURL,
 		LastPushedAt: raw.PushedAt,
 		OpenIssues:   raw.OpenIssuesCount,
+		Language:     raw.Language,
+		Topics:       raw.Topics,
 	}
 	// Fixing Name assignment logic to be consistent with FetchRepos if needed, or just use raw.Name if it's the repo name
 	// In FetchRepos: Name: strings.Split(r.FullName, "/")[1]
