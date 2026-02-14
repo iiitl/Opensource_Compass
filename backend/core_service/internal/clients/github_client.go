@@ -156,3 +156,48 @@ func (c *GitHubClient) FetchGoodFirstIssues(
 
 	return issues, nil
 }
+
+func (c *GitHubClient) FetchReadme(
+	ctx context.Context,
+	owner string,
+	repo string,
+	token string,
+) (string, error) {
+	if c.baseURL == "" {
+		return "", errors.New("github service url not configured")
+	}
+
+	// Endpoint: /repos/:owner/:repo/readme
+	endpoint := c.baseURL + "/repos/" + owner + "/" + repo + "/readme"
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		endpoint,
+		nil,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	addAuthHeader(req, token)
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New("github service returned non-200 response")
+	}
+
+	var result struct {
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	return result.Content, nil
+}

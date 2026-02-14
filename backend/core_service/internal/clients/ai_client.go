@@ -74,3 +74,57 @@ func (c *AIClient) AnalyzeIssue(
 
 	return &analysis, nil
 }
+
+func (c *AIClient) GetSetupGuide(
+	ctx context.Context,
+	readme string,
+	userLevel string,
+) (string, error) {
+	if c.baseURL == "" {
+		return "", errors.New("ai service url not configured")
+	}
+
+	reqBody := struct {
+		Readme    string `json:"readme"`
+		UserLevel string `json:"user_level"`
+	}{
+		Readme:    readme,
+		UserLevel: userLevel,
+	}
+
+	payload, err := json.Marshal(reqBody)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		c.baseURL+"/generate-setup-guide",
+		bytes.NewBuffer(payload),
+	)
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", errors.New("ai service returned non-200 response")
+	}
+
+	var result struct {
+		Guide string `json:"guide"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return "", err
+	}
+
+	return result.Guide, nil
+}

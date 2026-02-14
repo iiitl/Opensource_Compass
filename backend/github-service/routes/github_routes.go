@@ -102,4 +102,18 @@ func RegisterGithubRoutes(router *gin.Engine) {
 
 		c.JSON(200, issues)
 	})
+
+	router.GET("/repos/:owner/:repo/readme", func(c *gin.Context) {
+		owner := c.Param("owner")
+		repo := c.Param("repo")
+		token := os.Getenv("GITHUB_TOKEN")
+
+		readme, err := repos.GetRepoReadme(owner, repo, token)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"content": readme})
+	})
 }

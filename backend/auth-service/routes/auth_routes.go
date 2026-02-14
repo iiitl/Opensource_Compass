@@ -38,7 +38,15 @@ func RegisterAuthRoutes(r *gin.Engine) {
 			return
 		}
 
-		userID := fmt.Sprintf("%v", user["id"])
+		var userID string
+		switch v := user["id"].(type) {
+		case float64:
+			userID = fmt.Sprintf("%.0f", v)
+		case string:
+			userID = v
+		default:
+			userID = fmt.Sprintf("%v", v)
+		}
 		userLogin := fmt.Sprintf("%v", user["login"])
 		userAvatar := fmt.Sprintf("%v", user["avatar_url"])
 

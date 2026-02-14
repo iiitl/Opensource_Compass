@@ -56,7 +56,7 @@ func main() {
 	userRepo := users.NewRepository(dbPool)
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
-	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo)
+	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo, githubClient, aiClient)
 
 	// Wrap with CORS middleware
 	handler := corsMiddleware(mux)
