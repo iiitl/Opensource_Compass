@@ -15,6 +15,8 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+      - key: CORE_SERVICE_URL
+        value: http://core-service:10000
 
   # Core Service
   - type: web
