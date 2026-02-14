@@ -1,87 +1,47 @@
 services:
-  # Auth Service
   - type: web
-    name: auth-service
-    env: docker
-    dockerContext: ./backend/auth-service
-    dockerfilePath: ./backend/auth-service/Dockerfile
+    name: backend
+    runtime: docker
     plan: free
+    dockerfilePath: ./backend/Dockerfile.combined
+    dockerContext: ./backend
     envVars:
+      # Database
+      - key: DATABASE_URL
+        sync: false
+      
+      # JWT Secret (shared across services)
+      - key: JWT_SECRET
+        sync: false
+      
+      # GitHub OAuth
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
         sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: FRONTEND_URL
-        sync: false
-      - key: CORE_SERVICE_URL
-        fromService:
-          type: web
-          name: core-service
-          property: url
-
-  # Core Service
-  - type: web
-    name: core-service
-    env: docker
-    dockerContext: ./backend/core_service
-    dockerfilePath: ./backend/core_service/Dockerfile
-    plan: free
-    envVars:
-      - key: DATABASE_URL
-        sync: false
-      - key: JWT_SECRET
-        sync: false
-      - key: GITHUB_SERVICE_URL
-        fromService:
-          type: web
-          name: github-service
-          property: url
-      - key: AI_SERVICE_URL
-        fromService:
-          type: web
-          name: ai-service
-          property: url
-      - key: NOTIFICATION_SERVICE_URL
-        fromService:
-          type: web
-          name: notification-service
-          property: url
-
-  # GitHub Service (Public for Vercel)
-  - type: web
-    name: github-service
-    env: docker
-    dockerContext: ./backend/github-service
-    dockerfilePath: ./backend/github-service/Dockerfile
-    plan: free
-    envVars:
       - key: GITHUB_TOKEN
         sync: false
-
-  # AI Service (Public for Vercel)
-  - type: web
-    name: ai-service
-    env: docker
-    dockerContext: ./backend/ai-service
-    dockerfilePath: ./backend/ai-service/Dockerfile
-    plan: free
-    envVars:
+      
+      # AI Service
       - key: GEMINI_API_KEY
         sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: LLM_PROVIDER
-        sync: false
+        value: gemini
       - key: LLM_MODEL
+        value: gemini-2.0-flash-exp
+      
+      # Frontend URL
+      - key: FRONTEND_URL
         sync: false
-
-  # Notification Service (Public for Vercel)
-  - type: web
-    name: notification-service
-    env: docker
-    dockerContext: ./backend/notification-service
-    dockerfilePath: ./backend/notification-service/Dockerfile
-    plan: free
-    envVars: []
+      
+      # Service URLs (localhost since all in one container)
+      - key: GITHUB_SERVICE_URL
+        value: http://localhost:8081
+      - key: AI_SERVICE_URL
+        value: http://localhost:8082
+      - key: CORE_SERVICE_URL
+        value: http://localhost:8083
+      - key: NOTIFICATION_SERVICE_URL
+        value: http://localhost:8084
