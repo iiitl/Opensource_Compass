@@ -1,6 +1,7 @@
 package watchlist
 
 import (
+	"context"
 	"core-service/internal/users"
 	"fmt"
 	"log"
@@ -51,7 +52,7 @@ func (e *EmailNotifier) NotifyUser(userID string, payload interface{}) error {
 	}
 
 	// Get user email
-	user, err := e.userRepo.GetByID(nil, userID)
+	user, err := e.userRepo.GetByID(context.Background(), userID)
 	if err != nil {
 		return fmt.Errorf("failed to get user: %w", err)
 	}
