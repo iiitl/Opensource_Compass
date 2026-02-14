@@ -2,6 +2,7 @@ package github
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -57,10 +58,16 @@ func FetchUser(token string) (map[string]interface{}, error) {
 
 	// Fetch email if not public
 	if user["email"] == nil || user["email"] == "" {
+		fmt.Println("FetchUser: Email is missing or empty in public profile, fetching from /user/emails")
 		email, _ := FetchUserEmail(token)
 		if email != "" {
 			user["email"] = email
+			fmt.Printf("FetchUser: Updated user with fetched email: %s\n", email)
+		} else {
+			fmt.Println("FetchUser: Failed to fetch any email")
 		}
+	} else {
+		fmt.Printf("FetchUser: Email found in public profile: %v\n", user["email"])
 	}
 
 	return user, nil

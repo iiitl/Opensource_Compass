@@ -45,26 +45,33 @@ func NewEmailNotifier(userRepo *users.Repository) *EmailNotifier {
 
 // NotifyUser sends an email notification to the user
 func (e *EmailNotifier) NotifyUser(userID string, payload interface{}) error {
+	log.Printf("EmailNotifier: NotifyUser called for userID: %s", userID)
+
 	// Skip if SMTP not configured
 	if e.smtpHost == "" || e.smtpUser == "" || e.smtpPass == "" {
-		log.Println("EmailNotifier: SMTP not configured, skipping email notification")
+		log.Printf("EmailNotifier: SMTP not configured (Host: %s, User: %s, Pass set: %v), skipping email notification",
+			e.smtpHost, e.smtpUser, e.smtpPass != "")
 		return nil
 	}
 
 	// Get user email
 	user, err := e.userRepo.GetByID(context.Background(), userID)
 	if err != nil {
+		log.Printf("EmailNotifier: Failed to get user %s: %v", userID, err)
 		return fmt.Errorf("failed to get user: %w", err)
 	}
 
 	if user.Email == "" {
-		log.Printf("EmailNotifier: No email for user %s, skipping\n", userID)
+		log.Printf("EmailNotifier: No email found for user %s (GitHub: %s), skipping", userID, user.GitHubUsername)
 		return nil
 	}
+
+	log.Printf("EmailNotifier: Found email %s for user %s", user.Email, userID)
 
 	// Parse payload
 	data, ok := payload.(map[string]interface{})
 	if !ok {
+		log.Printf("EmailNotifier: Invalid payload type for user %s", userID)
 		return fmt.Errorf("invalid payload type")
 	}
 
@@ -72,6 +79,8 @@ func (e *EmailNotifier) NotifyUser(userID string, payload interface{}) error {
 	issueNumber, _ := data["issue_number"].(int)
 	issueTitle, _ := data["issue_title"].(string)
 	issueURL, _ := data["issue_url"].(string)
+
+	log.Printf("EmailNotifier: Preparing email for issue #%d in %s", issueNumber, repo)
 
 	// Create email
 	m := gomail.NewMessage()
@@ -83,12 +92,14 @@ func (e *EmailNotifier) NotifyUser(userID string, payload interface{}) error {
 	m.SetBody("text/html", htmlBody)
 
 	// Send email
+	log.Printf("EmailNotifier: Dialing SMTP server %s:%d...", e.smtpHost, e.smtpPort)
 	d := gomail.NewDialer(e.smtpHost, e.smtpPort, e.smtpUser, e.smtpPass)
 	if err := d.DialAndSend(m); err != nil {
+		log.Printf("EmailNotifier: Failed to send email to %s: %v", user.Email, err)
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
-	log.Printf("EmailNotifier: Email sent to %s for issue #%d in %s\n", user.Email, issueNumber, repo)
+	log.Printf("EmailNotifier: Email sent successfully to %s for issue #%d in %s", user.Email, issueNumber, repo)
 	return nil
 }
 

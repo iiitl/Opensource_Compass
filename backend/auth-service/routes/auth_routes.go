@@ -53,7 +53,7 @@ func RegisterAuthRoutes(r *gin.Engine) {
 			userEmail = email
 		}
 
-		jwtToken, err := jwtutil.GenerateJWT(userID, userLogin, userAvatar)
+		jwtToken, err := jwtutil.GenerateJWT(userID, userLogin, userAvatar, userEmail)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 			return
@@ -92,6 +92,7 @@ func RegisterAuthRoutes(r *gin.Engine) {
 			"id":       claims["user_id"],
 			"username": claims["username"],
 			"avatar":   claims["avatar"],
+			"email":    claims["email"],
 			"token":    tokenString,
 		})
 	})
@@ -100,6 +101,23 @@ func RegisterAuthRoutes(r *gin.Engine) {
 		// Clear cookie
 		c.SetCookie("auth_token", "", -1, "/", "", false, true)
 		c.JSON(http.StatusOK, gin.H{"message": "Logged out"})
+	})
+
+	// Debug endpoint to check email fetching
+	r.GET("/auth/debug/email", func(c *gin.Context) {
+		token := c.Query("token")
+		if token == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Token required"})
+			return
+		}
+
+		email, err := github.FetchUserEmail(token)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"email": email})
 	})
 }
 
