@@ -1,1 +1,1 @@
-ALTER TABLE users ADD COLUMN github_token TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS github_token TEXT;

@@ -9,8 +9,25 @@ import (
 )
 
 func FetchGoodFirstIssues(owner, repo, token string) ([]IssueDTO, error) {
-	rawQuery := fmt.Sprintf(`repo:%s/%s label:"good first issue"`,
-		owner, repo,
+	labels := []string{
+		"good first issue",
+		"help wanted",
+		"beginner",
+		"easy",
+		"starter",
+		"first-timers-only",
+	}
+
+	labelQuery := ""
+	for i, label := range labels {
+		if i > 0 {
+			labelQuery += " OR "
+		}
+		labelQuery += fmt.Sprintf(`label:"%s"`, label)
+	}
+
+	rawQuery := fmt.Sprintf(`repo:%s/%s (%s)`,
+		owner, repo, labelQuery,
 	)
 
 	encodedQuery := url.QueryEscape(rawQuery)

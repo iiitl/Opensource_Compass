@@ -23,10 +23,12 @@ func RegisterRoutes(
 ) {
 	handler := NewRecommendationHandler(orchService, jwtSecret, userRepo)
 	prefHandler := NewPreferencesHandler(prefRepo, userRepo, jwtSecret)
+	repoHandler := NewRepoHandler(orchService, jwtSecret, userRepo)
 	userHandler := NewUserHandler(userRepo, jwtSecret)
 	setupHandler := handlers.NewSetupGuideHandler(githubClient, aiClient, userRepo)
 
 	mux.Handle("/recommendations", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(handler.GetRecommendations)))
+	mux.Handle("/repos/search", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(repoHandler.HandleSearch)))
 	mux.Handle("/preferences", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(prefHandler.HandlePreferences)))
 	mux.Handle("/users/", auth.JWTMiddleware(jwtSecret, userHandler))
 	mux.Handle("/repo/setup-guide", auth.JWTMiddleware(jwtSecret, http.HandlerFunc(setupHandler.GetSetupGuide)))

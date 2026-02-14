@@ -9,12 +9,15 @@ import {
   IconSettings,
   IconUserBolt,
   IconStars,
+  IconBell,
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import { useAuth } from "@/contexts/auth-context";
+import { useNotifications } from "@/contexts/notification-context";
 
 export default function SidebarComponent() {
   const { logout, username, avatar } = useAuth();
+  const { unreadCount } = useNotifications();
   
   const handleLogout = () => {
     logout();
@@ -29,13 +32,6 @@ export default function SidebarComponent() {
       ),
     },
     {
-      label: "Issues",
-      href: "/issues",
-      icon: (
-        <IconBug className="h-5 w-5 shrink-0 text-[#8b949e]" />
-      ),
-    },
-    {
       label: "Recommendations",
       href: "/recommendations",
       icon: (
@@ -43,10 +39,17 @@ export default function SidebarComponent() {
       ),
     },
     {
-      label: "Dashboard",
-      href: "/dashboard",
+      label: "Notifications",
+      href: "/notifications",
       icon: (
-        <IconBrandTabler className="h-5 w-5 shrink-0 text-[#8b949e]" />
+        <div className="relative">
+          <IconBell className="h-5 w-5 shrink-0 text-[#8b949e]" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-red-500 text-[10px] font-semibold text-white flex items-center justify-center">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </div>
       ),
     },
     {

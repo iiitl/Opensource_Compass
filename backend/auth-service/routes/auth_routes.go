@@ -47,6 +47,7 @@ func RegisterAuthRoutes(r *gin.Engine) {
 		default:
 			userID = fmt.Sprintf("%v", v)
 		}
+
 		userLogin := fmt.Sprintf("%v", user["login"])
 		userAvatar := fmt.Sprintf("%v", user["avatar_url"])
 
@@ -89,6 +90,7 @@ func RegisterAuthRoutes(r *gin.Engine) {
 			"id":       claims["user_id"],
 			"username": claims["username"],
 			"avatar":   claims["avatar"],
+			"token":    tokenString,
 		})
 	})
 
