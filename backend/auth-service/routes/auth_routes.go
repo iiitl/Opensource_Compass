@@ -52,8 +52,10 @@ func RegisterAuthRoutes(r *gin.Engine) {
 		userAvatar := fmt.Sprintf("%v", user["avatar_url"])
 		userEmail := ""
 		if email, ok := user["email"].(string); ok {
-			userEmail = email
+		userEmail = email
 		}
+
+		fmt.Printf("DEBUG: Generating Token for UserID: %s, Login: %s. Secret Env Len: %d\n", userID, userLogin, len(os.Getenv("JWT_SECRET")))
 
 		jwtToken, err := jwtutil.GenerateJWT(userID, userLogin, userAvatar, userEmail)
 		if err != nil {
