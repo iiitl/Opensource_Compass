@@ -38,12 +38,14 @@ func RegisterAuthRoutes(r *gin.Engine) {
 			return
 		}
 
-		// Handle ID which might be float64 from JSON
 		var userID string
-		if idFloat, ok := user["id"].(float64); ok {
-			userID = fmt.Sprintf("%.0f", idFloat)
-		} else {
-			userID = fmt.Sprintf("%v", user["id"])
+		switch v := user["id"].(type) {
+		case float64:
+			userID = fmt.Sprintf("%.0f", v)
+		case string:
+			userID = v
+		default:
+			userID = fmt.Sprintf("%v", v)
 		}
 
 		userLogin := fmt.Sprintf("%v", user["login"])

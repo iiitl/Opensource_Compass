@@ -1,6 +1,7 @@
-import { Star, Clock, GitFork, ExternalLink } from "lucide-react";
+import { Star, Clock, GitFork, ExternalLink, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Repository } from "@/lib/api/github-service";
+import Link from "next/link";
 
 interface RepoCardProps {
   repo: Repository;
@@ -31,11 +32,11 @@ export default function RepoCard({ repo }: RepoCardProps) {
 
   const timeSinceUpdate = (dateString: string | undefined): string => {
     if (!dateString) return "Unknown";
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
+
     if (diffInDays === 0) return "Today";
     if (diffInDays === 1) return "Yesterday";
     if (diffInDays < 7) return `${diffInDays} days ago`;
@@ -55,7 +56,7 @@ export default function RepoCard({ repo }: RepoCardProps) {
 
   return (
     <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-6 flex flex-col justify-between hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all hover:-translate-y-1 group">
-      
+
       {/* Header */}
       <div className="space-y-3">
         <div className="flex items-start justify-between gap-2">
@@ -68,7 +69,7 @@ export default function RepoCard({ repo }: RepoCardProps) {
             </span>
           )}
         </div>
-        
+
         <p className="text-sm text-[#6e7681]">
           {repo.owner}
         </p>
@@ -80,8 +81,8 @@ export default function RepoCard({ repo }: RepoCardProps) {
         {/* Language Badge */}
         {repo.language && (
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#161b22] border border-[#30363d] rounded-full text-xs">
-            <div 
-              className="w-2.5 h-2.5 rounded-full" 
+            <div
+              className="w-2.5 h-2.5 rounded-full"
               style={{ backgroundColor: languageColor }}
             />
             <span>{repo.language}</span>
@@ -105,6 +106,16 @@ export default function RepoCard({ repo }: RepoCardProps) {
 
       {/* Actions */}
       <div className="mt-5 flex gap-3">
+        <Button
+          asChild
+          variant="default"
+          className="flex-1 bg-[#2f81f7] hover:bg-[#2f81f7]/90 text-white border border-transparent"
+        >
+          <Link href={`/repo/${repo.owner}/${repo.name}/setup`}>
+            <Settings className="h-4 w-4 mr-2" />
+            Setup
+          </Link>
+        </Button>
         <Button
           variant="secondary"
           className="flex-1 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d]"

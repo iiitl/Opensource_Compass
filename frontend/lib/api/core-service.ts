@@ -80,3 +80,53 @@ export function getLevelBadgeColor(level: string): { bg: string; border: string;
         text: '#a371f7'
     };
 }
+
+export interface SetupGuide {
+    prerequisites: string[];
+    installation_steps: {
+        description: string;
+        command: string;
+    }[];
+    environment_variables: {
+        name: string;
+        description: string;
+        required: boolean;
+    }[];
+    common_errors: {
+        error: string;
+        fix: string;
+    }[];
+    contribution_tips: string[];
+}
+
+export async function getSetupGuide(owner: string, repo: string, userId: string): Promise<SetupGuide> {
+    const encodedUserId = encodeURIComponent(userId);
+    const response = await fetch(`${CORE_SERVICE_URL}/repo/setup-guide?repo=${owner}/${repo}&user_id=${encodedUserId}`, {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Failed to generate setup guide: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Parse the markdown JSON string
+    let jsonString = data.guide;
+
+    // Remove markdown code block markers
+    if (jsonString.startsWith('```json')) {
+        jsonString = jsonString.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    } else if (jsonString.startsWith('```')) {
+         jsonString = jsonString.replace(/^```\s*/, '').replace(/\s*```$/, '');
+    }
+
+    try {
+        return JSON.parse(jsonString);
+    } catch (e) {
+        console.error("Failed to parse guide JSON", e);
+        throw new Error("Invalid response format from AI service");
+    }
+}

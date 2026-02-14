@@ -82,7 +82,7 @@ func main() {
 
 	orchService := orchestration.NewService(prefRepo, aiClient, githubClient)
 
-	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo)
+	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo, githubClient, aiClient)
 	routes.RegisterWatchlistRoutes(mux, watchlistRepo, cfg.JWTSecret)
 
 	// Wrap with CORS middleware

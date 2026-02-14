@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -263,4 +264,41 @@ func FetchRepo(owner string, repo string, token string) (*RepoDTO, error) {
 	// GitHub API /repos/:owner/:repo returns "name" as just the repo name, so raw.Name is correct if we want that.
 
 	return repoDto, nil
+}
+
+func GetRepoReadme(owner string, repo string, token string) (string, error) {
+	client := &http.Client{}
+	// Use the raw.githubusercontent.com domain or the API with media type header
+	// Using API with custom header is often more reliable for private repos if token is used
+	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/readme", owner, repo)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	// Request raw content
+	req.Header.Set("Accept", "application/vnd.github.v3.raw")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("github api returned status: %d", resp.StatusCode)
+	}
+
+	// Read body
+	buf := new(strings.Builder)
+	_, err = io.Copy(buf, resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }

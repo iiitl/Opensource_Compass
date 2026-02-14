@@ -31,8 +31,10 @@ func main() {
 	}
 
 	analyzer := analysis.NewAnalyzer(llmClient)
+	setupGenerator := analysis.NewSetupGenerator(llmClient)
 
 	http.HandleFunc("/analyze-issue", routes.AnalyzeIssue(analyzer))
+	http.HandleFunc("/generate-setup-guide", routes.GenerateSetupGuide(setupGenerator))
 
 	log.Println("AI Service running on port", cfg.Port)
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))

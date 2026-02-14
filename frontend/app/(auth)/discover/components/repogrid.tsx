@@ -1,9 +1,10 @@
 "use client";
 
 import { Repository } from "@/lib/api/github-service";
-import { Star, GitFork, Circle, ExternalLink } from "lucide-react";
+import { Star, GitFork, Circle, ExternalLink, Settings } from "lucide-react";
 import { WatchButton } from "@/components/watch-button";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface RepoGridProps {
   repos: Repository[];
@@ -51,7 +52,7 @@ function RepoCard({ repo }: RepoCardProps) {
     <div className="block bg-gradient-to-br from-[#161b22] to-[#0d1117] border border-[#30363d] rounded-xl p-6 hover:border-[#58a6ff] hover:shadow-lg hover:shadow-[#58a6ff]/10 transition-all duration-300 group relative overflow-hidden">
       {/* Gradient overlay on hover */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#58a6ff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-      
+
       <div className="relative z-10">
         {/* Header with external link */}
         <div className="flex items-start justify-between mb-4">
@@ -60,7 +61,7 @@ function RepoCard({ repo }: RepoCardProps) {
               <Circle className="h-4 w-4 text-[#8b949e] shrink-0" />
               <span className="text-xs text-[#8b949e] truncate">{repo.owner}</span>
             </div>
-            <a 
+            <a
               href={repo.html_url}
               target="_blank"
               rel="noopener noreferrer"
@@ -72,7 +73,7 @@ function RepoCard({ repo }: RepoCardProps) {
           <a
             href={repo.html_url}
             target="_blank"
-            rel="noopener noreferrer" 
+            rel="noopener noreferrer"
             className="ml-3 p-2 rounded-lg bg-[#21262d] border border-[#30363d] group-hover:border-[#58a6ff] group-hover:bg-[#58a6ff]/10 transition-all block"
           >
             <ExternalLink className="h-4 w-4 text-[#8b949e] group-hover:text-[#58a6ff]" />
@@ -101,7 +102,7 @@ function RepoCard({ repo }: RepoCardProps) {
               </span>
             </div>
           )}
-          
+
           {/* Language */}
           {repo.language && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#21262d] border border-[#30363d]">
@@ -120,16 +121,26 @@ function RepoCard({ repo }: RepoCardProps) {
 
         {/* Action area */}
         <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#30363d]">
+          <Button
+            asChild
+            size="sm"
+            className="h-8 bg-[#2f81f7] hover:bg-[#2f81f7]/90 text-white border-0"
+          >
+            <Link href={`/repo/${repo.owner}/${repo.name}/setup`}>
+              <Settings className="h-3.5 w-3.5 mr-1.5" />
+              Setup
+            </Link>
+          </Button>
           <a
             href={repo.html_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-[#58a6ff] hover:underline flex items-center gap-1"
+            className="text-xs text-[#58a6ff] hover:underline flex items-center gap-1 ml-2"
           >
             View Repository <ExternalLink className="w-3 h-3" />
           </a>
           <div className="ml-auto pointer-events-auto">
-             <WatchButton owner={repo.owner} name={repo.name} />
+            <WatchButton owner={repo.owner} name={repo.name} />
           </div>
         </div>
 
