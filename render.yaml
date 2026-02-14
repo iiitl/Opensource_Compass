@@ -26,8 +26,7 @@ services:
     dockerfilePath: ./backend/core_service/Dockerfile
     plan: free
     envVars:
-      - key: SERVER_PORT
-        fromEnvVar: PORT
+
       - key: DATABASE_URL
         sync: false
       - key: JWT_SECRET
@@ -69,8 +68,7 @@ services:
     dockerfilePath: ./backend/ai-service/Dockerfile
     plan: free
     envVars:
-      - key: AI_SERVICE_PORT
-        fromEnvVar: PORT
+
       - key: GEMINI_API_KEY
         sync: false
       - key: GROQ_API_KEY
