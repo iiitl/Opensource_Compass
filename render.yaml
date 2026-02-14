@@ -7,8 +7,6 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     envVars:
-      - key: PORT
-        value: 8080
       - key: GITHUB_CLIENT_ID
         sync: false
       - key: GITHUB_CLIENT_SECRET
@@ -54,8 +52,6 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     envVars:
-      - key: PORT
-        value: 8081
       - key: GITHUB_TOKEN
         sync: false
 
@@ -83,6 +79,4 @@ services:
     dockerContext: ./backend/notification-service
     dockerfilePath: Dockerfile
     plan: free
-    envVars:
-      - key: PORT
-        value: 8084
+    envVars: []
