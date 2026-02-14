@@ -48,6 +48,10 @@ func RegisterAuthRoutes(r *gin.Engine) {
 
 		userLogin := fmt.Sprintf("%v", user["login"])
 		userAvatar := fmt.Sprintf("%v", user["avatar_url"])
+		userEmail := ""
+		if email, ok := user["email"].(string); ok {
+			userEmail = email
+		}
 
 		jwtToken, err := jwtutil.GenerateJWT(userID, userLogin, userAvatar)
 		if err != nil {
@@ -63,8 +67,8 @@ func RegisterAuthRoutes(r *gin.Engine) {
 		// HttpOnly: true
 		c.SetCookie("auth_token", jwtToken, 86400, "/", "", false, true)
 
-		// Save GitHub token to core_service in background
-		go saveGitHubTokenToCore(userID, accessToken, jwtToken)
+		// Save GitHub token and email to core_service in background
+		go saveUserDataToCore(userID, accessToken, userEmail, jwtToken)
 
 		// Redirect to frontend success page without sensitive data
 		redirect := os.Getenv("FRONTEND_URL") + "/auth/success"
@@ -99,19 +103,22 @@ func RegisterAuthRoutes(r *gin.Engine) {
 	})
 }
 
-func saveGitHubTokenToCore(userID string, githubToken string, jwtToken string) {
+func saveUserDataToCore(userID string, githubToken string, email string, jwtToken string) {
 	coreServiceURL := os.Getenv("CORE_SERVICE_URL")
 	if coreServiceURL == "" {
 		coreServiceURL = "http://localhost:8083"
 	}
 
 	url := fmt.Sprintf("%s/users/%s/github-token", coreServiceURL, userID)
-	payload := map[string]string{"token": githubToken}
+	payload := map[string]string{
+		"token": githubToken,
+		"email": email,
+	}
 	jsonData, _ := json.Marshal(payload)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		fmt.Printf("❌ Failed to create request to save GitHub token: %v\n", err)
+		fmt.Printf("❌ Failed to create request to save user data: %v\n", err)
 		return
 	}
 
@@ -121,15 +128,15 @@ func saveGitHubTokenToCore(userID string, githubToken string, jwtToken string) {
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Printf("❌ Failed to save GitHub token: %v\n", err)
+		fmt.Printf("❌ Failed to save user data: %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		fmt.Printf("✅ GitHub token saved for user %s\n", userID)
+		fmt.Printf("✅ User data saved for user %s\n", userID)
 	} else {
 		body, _ := io.ReadAll(resp.Body)
-		fmt.Printf("⚠️  Failed to save GitHub token (status %d): %s\n", resp.StatusCode, string(body))
+		fmt.Printf("⚠️  Failed to save user data (status %d): %s\n", resp.StatusCode, string(body))
 	}
 }

@@ -23,6 +23,7 @@ func NewUserHandler(userRepo *users.Repository, jwtSecret string) *UserHandler {
 
 type SaveGitHubTokenRequest struct {
 	Token string `json:"token"`
+	Email string `json:"email"`
 }
 
 func (h *UserHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -83,10 +84,19 @@ func (h *UserHandler) SaveGitHubToken(w http.ResponseWriter, r *http.Request, us
 		return
 	}
 
+	// Update email if provided
+	if req.Email != "" {
+		if err := h.userRepo.UpdateEmail(ctx, userID, req.Email); err != nil {
+			// Log error but don't fail the request
+			http.Error(w, "failed to save email: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{
-		"message": "GitHub token saved successfully",
+		"message": "User data saved successfully",
 	})
 }
 
