@@ -12,7 +12,11 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load()
+	// Load the root .env file from the project root
+	if err := godotenv.Load("../../.env"); err != nil {
+		log.Println("No .env file found at ../../.env, checking current directory")
+		_ = godotenv.Load() // Fallback to local .env
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {

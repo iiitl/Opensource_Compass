@@ -11,7 +11,7 @@ RUN go build -o notification-service ./cmd/server
 FROM alpine:latest
 WORKDIR /app
 COPY --from=builder /app/notification-service .
-COPY --from=builder /app/.env .
+
 
 EXPOSE 8084
 CMD ["./notification-service"]
