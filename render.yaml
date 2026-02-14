@@ -33,17 +33,17 @@ services:
         sync: false
       - key: GITHUB_SERVICE_URL
         fromService:
-          type: pserv
+          type: web
           name: github-service
           property: host
       - key: AI_SERVICE_URL
         fromService:
-          type: pserv
+          type: web
           name: ai-service
           property: host
       - key: NOTIFICATION_SERVICE_URL
         fromService:
-          type: pserv
+          type: web
           name: notification-service
           property: host
 
