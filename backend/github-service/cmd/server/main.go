@@ -11,10 +11,9 @@ import (
 
 func main() {
 	// Load the root .env file from the project root
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println("No .env file found at ../../.env, checking current directory")
-		_ = godotenv.Load() // Fallback to local .env or system env
-	}
+	// Load the root .env file from the project root (optional, for local dev)
+	_ = godotenv.Load("../../.env")
+	_ = godotenv.Load() // Fallback to local .env
 	token := os.Getenv("GITHUB_TOKEN")
 
 	if token == "" {
@@ -48,6 +47,11 @@ func main() {
 
 	routes.RegisterGithubRoutes(r)
 
-	log.Println("Github service running on :8081")
-	r.Run(":8081")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
+
+	log.Println("Github service running on :" + port)
+	r.Run(":" + port)
 }

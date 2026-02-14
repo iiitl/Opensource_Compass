@@ -89,7 +89,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
     if (!userId) return;
 
-    const wsUrl = `ws://localhost:8084/ws?user_id=${userId}`;
+    const wsBaseUrl = process.env.NEXT_PUBLIC_NOTIFICATION_SERVICE_URL || "ws://localhost:8084";
+    const wsUrl = `${wsBaseUrl}/ws?user_id=${userId}`;
     console.log(`NotificationService: Connecting to ${wsUrl}...`);
     const ws = new WebSocket(wsUrl);
 

@@ -38,10 +38,9 @@ func corsMiddleware(next http.Handler) http.Handler {
 
 func main() {
 	// Load the root .env file from the project root
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println("No .env file found at ../../.env, checking current directory")
-		_ = godotenv.Load() // Fallback to local .env
-	}
+	// Load the root .env file from the project root (optional, for local dev)
+	_ = godotenv.Load("../../.env")
+	_ = godotenv.Load() // Fallback to local .env
 	cfg := config.Load()
 	aiClient := clients.NewAIClient(cfg.AISvcURL)
 	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)

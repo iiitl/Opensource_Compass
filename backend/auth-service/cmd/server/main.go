@@ -2,7 +2,6 @@ package main
 
 import (
 	"auth-service/routes"
-	"fmt"
 	"log"
 	"os"
 
@@ -12,12 +11,9 @@ import (
 
 func main() {
 	// Load the root .env file from the project root
-	if err := godotenv.Load("../../.env"); err != nil {
-		fmt.Println("No .env file found at ../../.env, checking current directory")
-		if err := godotenv.Load(); err != nil {
-			fmt.Println("Failed to load .env file")
-		}
-	}
+	// Load the root .env file from the project root (optional, for local dev)
+	_ = godotenv.Load("../../.env")
+	_ = godotenv.Load() // Fallback to local .env
 
 	required := []string{
 		"GITHUB_CLIENT_ID",

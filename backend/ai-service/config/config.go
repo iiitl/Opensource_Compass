@@ -12,7 +12,7 @@ type Config struct {
 
 func Load() *Config {
 	return &Config{
-		Port:        getEnv("AI_SERVICE_PORT", "8082"),
+		Port:        getEnv("PORT", getEnv("AI_SERVICE_PORT", "8082")),
 		GeminiKey:   os.Getenv("GEMINI_API_KEY"),
 		GroqKey:     os.Getenv("GROQ_API_KEY"),
 		Model:       getEnv("LLM_MODEL", "llama-3.3-70b-versatile"),

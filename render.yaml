@@ -1,0 +1,92 @@
+services:
+  # Auth Service
+  - type: web
+    name: auth-service
+    env: docker
+    dockerContext: .
+    dockerfilePath: ./backend/auth-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
+  # Core Service
+  - type: web
+    name: core-service
+    env: docker
+    dockerContext: .
+    dockerfilePath: ./backend/core_service/Dockerfile
+    plan: free
+    envVars:
+      - key: SERVER_PORT
+        fromEnvVar: PORT
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GITHUB_SERVICE_URL
+        fromService:
+          type: pserv
+          name: github-service
+          property: host
+      - key: AI_SERVICE_URL
+        fromService:
+          type: pserv
+          name: ai-service
+          property: host
+      - key: NOTIFICATION_SERVICE_URL
+        fromService:
+          type: pserv
+          name: notification-service
+          property: host
+
+  # GitHub Service (Public for Vercel)
+  - type: web
+    name: github-service
+    env: docker
+    dockerContext: .
+    dockerfilePath: ./backend/github-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: GITHUB_TOKEN
+        sync: false
+
+  # AI Service (Public for Vercel)
+  - type: web
+    name: ai-service
+    env: docker
+    dockerContext: .
+    dockerfilePath: ./backend/ai-service/Dockerfile
+    plan: free
+    envVars:
+      - key: AI_SERVICE_PORT
+        fromEnvVar: PORT
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: LLM_PROVIDER
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+
+  # Notification Service (Public for Vercel)
+  - type: web
+    name: notification-service
+    env: docker
+    dockerContext: .
+    dockerfilePath: ./backend/notification-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8084

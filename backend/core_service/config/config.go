@@ -16,7 +16,7 @@ type Config struct {
 
 func Load() *Config {
 	cfg := &Config{
-		ServerPort:         getEnv("SERVER_PORT", "8083"),
+		ServerPort:         getEnv("PORT", getEnv("SERVER_PORT", "8083")),
 		DatabaseURL:        getEnv("DATABASE_URL", ""),
 		GitHubSvcURL:       getEnv("GITHUB_SERVICE_URL", "http://localhost:8081"),
 		AISvcURL:           getEnv("AI_SERVICE_URL", "http://localhost:8082"),
