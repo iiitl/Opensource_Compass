@@ -28,6 +28,10 @@ func main() {
 		}
 	}
 
+	// Debug: Print JWT secret (first 8 chars only)
+	jwtSecret := os.Getenv("JWT_SECRET")
+	log.Printf("🔑 Auth Service JWT_SECRET: %s... (len: %d)", jwtSecret[:8], len(jwtSecret))
+
 	router := gin.Default()
 
 	router.GET("/health", func(c *gin.Context) {

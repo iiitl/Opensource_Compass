@@ -62,6 +62,9 @@ func main() {
 		}
 	}
 
+	// Debug: Print JWT secret (first 8 chars only)
+	log.Printf("🔑 Core Service JWT_SECRET: %s... (len: %d)", cfg.JWTSecret[:8], len(cfg.JWTSecret))
+
 	mux := http.NewServeMux()
 	routes.RegisterHealthRoutes(mux)
 
