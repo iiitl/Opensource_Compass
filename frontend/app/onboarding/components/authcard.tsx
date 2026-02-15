@@ -19,7 +19,8 @@ export default function AuthCard() {
       <Button
         className="bg-[#238636] hover:bg-[#2ea043] w-full"
         onClick={() => {
-          window.location.href = "/api/auth/github";
+          const authUrl = `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/github`;
+          window.location.href = authUrl;
         }}
       >
         Continue with GitHub

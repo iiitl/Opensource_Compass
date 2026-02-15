@@ -34,7 +34,8 @@ export default function NavbarDemo() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogin = () => {
-    window.location.href = "/api/auth/github";
+    const authUrl = `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/github`;
+    window.location.href = authUrl;
   };
 
   return (
