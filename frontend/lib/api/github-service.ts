@@ -34,10 +34,10 @@ export async function searchRepositories(
             params.append('domain', domains.map(d => d.toLowerCase()).join(','));
         }
 
-        // Use Next.js API proxy to avoid CORS issues
-        const url = `/api/github/repos/search?${params.toString()}`;
+        // Use full backend URL for production
+        const url = `${GITHUB_SERVICE_URL}/repos/search?${params.toString()}`;
 
-        console.log("Calling GitHub service via proxy:", url);
+        console.log("Calling GitHub service:", url);
 
         const response = await fetch(url);
 
