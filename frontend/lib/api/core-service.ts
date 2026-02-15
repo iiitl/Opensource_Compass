@@ -115,6 +115,7 @@ export async function getSetupGuide(owner: string, repo: string, userId: string)
 
     const encodedUserId = encodeURIComponent(userId);
     const response = await fetch(`${CORE_SERVICE_URL}/repo/setup-guide?repo=${owner}/${repo}&user_id=${encodedUserId}`, {
+        method: 'GET',
         headers,
     });
 
