@@ -25,11 +25,16 @@ export interface Recommendation {
 
 export async function getRecommendations(): Promise<Recommendation> {
     try {
-        // No need to manually pass token, cookies are automatically sent
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${CORE_SERVICE_URL}/recommendations`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
         });
 
         if (!response.ok) {
@@ -100,11 +105,17 @@ export interface SetupGuide {
 }
 
 export async function getSetupGuide(owner: string, repo: string, userId: string): Promise<SetupGuide> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const encodedUserId = encodeURIComponent(userId);
     const response = await fetch(`${CORE_SERVICE_URL}/repo/setup-guide?repo=${owner}/${repo}&user_id=${encodedUserId}`, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers,
     });
 
     if (!response.ok) {
