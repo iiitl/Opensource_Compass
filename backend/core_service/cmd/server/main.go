@@ -19,22 +19,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// CORS middleware
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		// Handle preflight requests
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
 
 func main() {
 	// Load the root .env file from the project root
@@ -90,9 +75,7 @@ func main() {
 	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo, githubClient, aiClient)
 	routes.RegisterWatchlistRoutes(mux, watchlistRepo, cfg.JWTSecret)
 
-	// Wrap with CORS middleware
-	handler := corsMiddleware(mux)
-
+	// nginx handles CORS, so use mux directly
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, handler))
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
 }
