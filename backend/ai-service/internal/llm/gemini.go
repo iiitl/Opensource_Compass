@@ -40,7 +40,7 @@ func (c *GeminiClient) Chat(messages []Message) (string, error) {
 
 	b, _ := json.Marshal(body)
 
-	url := "https://generativelanguage.googleapis.com/v1beta/models/" +
+	url := "https://generativelanguage.googleapis.com/v1/models/" +
 		c.model + ":generateContent?key=" + c.apiKey
 
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
