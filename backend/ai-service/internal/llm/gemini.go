@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type GeminiClient struct {
@@ -40,8 +41,14 @@ func (c *GeminiClient) Chat(messages []Message) (string, error) {
 
 	b, _ := json.Marshal(body)
 
-	url := "https://generativelanguage.googleapis.com/v1/models/" +
-		c.model + ":generateContent?key=" + c.apiKey
+	// Ensure Gemini 1.5 models have -latest suffix
+	model := c.model
+	if (model == "gemini-1.5-flash" || model == "gemini-1.5-pro") && !strings.HasSuffix(model, "-latest") {
+		model = model + "-latest"
+	}
+
+	url := "https://generativelanguage.googleapis.com/v1beta/models/" +
+		model + ":generateContent?key=" + c.apiKey
 
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")
