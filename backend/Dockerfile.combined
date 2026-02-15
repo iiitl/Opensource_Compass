@@ -52,13 +52,25 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisord.conf
 COPY start.sh /start.sh
 
+# Copy service wrapper scripts
+COPY start-auth.sh /start-auth.sh
+COPY start-core.sh /start-core.sh
+COPY start-github.sh /start-github.sh
+COPY start-ai.sh /start-ai.sh
+COPY start-notification.sh /start-notification.sh
+
 # Create necessary directories
 RUN mkdir -p /var/log/supervisor \
     /var/log/nginx \
     /run/nginx
 
-# Make start script executable
-RUN chmod +x /start.sh
+# Make all scripts executable
+RUN chmod +x /start.sh \
+    /start-auth.sh \
+    /start-core.sh \
+    /start-github.sh \
+    /start-ai.sh \
+    /start-notification.sh
 
 # Expose port (Render uses PORT env var, defaults to 10000)
 EXPOSE 10000
