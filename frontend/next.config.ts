@@ -7,22 +7,27 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname),
   },
   async rewrites() {
+    const authServiceUrl = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
+    const coreServiceUrl = process.env.CORE_SERVICE_URL || "http://localhost:8083";
+    const githubServiceUrl = process.env.GITHUB_SERVICE_URL || "http://localhost:8081";
+    const aiServiceUrl = process.env.AI_SERVICE_URL || "http://localhost:8082";
+    
     return [
       {
         source: "/api/auth/:path*",
-        destination: `${process.env.AUTH_SERVICE_URL || "http://localhost:8080"}/auth/:path*`,
+        destination: `${authServiceUrl}/auth/:path*`,
       },
       {
         source: "/api/github/:path*",
-        destination: `${process.env.GITHUB_SERVICE_URL || "http://localhost:8081"}/:path*`,
+        destination: `${githubServiceUrl}/:path*`,
       },
       {
         source: "/api/ai/:path*",
-        destination: `${process.env.AI_SERVICE_URL || "http://localhost:8082"}/:path*`,
+        destination: `${aiServiceUrl}/:path*`,
       },
       {
         source: "/api/core/:path*",
-        destination: `${process.env.CORE_SERVICE_URL || "http://localhost:8083"}/:path*`,
+        destination: `${coreServiceUrl}/:path*`,
       },
     ];
   },
