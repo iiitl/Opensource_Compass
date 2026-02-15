@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
     root: path.resolve(__dirname),
   },
   async rewrites() {
+    // Only use rewrites in development (local)
+    // In production, frontend calls backend directly via NEXT_PUBLIC_* URLs
+    // since CORS is already configured on the backend
+    if (process.env.NODE_ENV === 'production') {
+      return [];
+    }
+
     const authServiceUrl = process.env.AUTH_SERVICE_URL || "http://localhost:8080";
     const coreServiceUrl = process.env.CORE_SERVICE_URL || "http://localhost:8083";
     const githubServiceUrl = process.env.GITHUB_SERVICE_URL || "http://localhost:8081";
