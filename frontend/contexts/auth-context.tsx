@@ -52,7 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           headers['Authorization'] = `Bearer ${storedToken}`;
       }
 
-      const res = await fetch('/api/auth/me', { headers }); // Proxied to backend with header
+      const authUrl = `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/me`;
+      const res = await fetch(authUrl, { headers });
       if (res.ok) {
         const data = await res.json();
         setUserId(data.id);
@@ -92,7 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      const logoutUrl = `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/logout`;
+      await fetch(logoutUrl, { method: 'POST' });
       setUserId(null);
       setUsername(null);
       setAvatar(null);
