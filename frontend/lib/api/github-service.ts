@@ -23,7 +23,7 @@ export async function searchRepositories(
         const params = new URLSearchParams();
 
         if (languages.length > 0) {
-            params.append('languages', languages.join(','));
+            params.append('languages', languages.map(l => l.toLowerCase()).join(','));
         }
 
         if (frameworks.length > 0) {
@@ -31,12 +31,13 @@ export async function searchRepositories(
         }
 
         if (domains.length > 0) {
-            params.append('domain', domains.join(','));
+            params.append('domain', domains.map(d => d.toLowerCase()).join(','));
         }
 
-        const url = `${GITHUB_SERVICE_URL}/repos/search?${params.toString()}`;
+        // Use Next.js API proxy to avoid CORS issues
+        const url = `/api/github/repos/search?${params.toString()}`;
 
-        console.log("Calling GitHub service:", url);
+        console.log("Calling GitHub service via proxy:", url);
 
         const response = await fetch(url);
 

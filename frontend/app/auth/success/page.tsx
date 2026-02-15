@@ -14,21 +14,37 @@ function AuthSuccessContent() {
     console.log("🔐 Auth Success Page Loaded");
     
     const verifyAuth = async () => {
-      // The backend sets a cookie before redirecting here.
-      // We just need to verify the session.
-      console.log("🔄 Verifying session...");
-      try {
-        await checkAuth();
-        console.log("🔀 Redirecting to onboarding");
-        router.push("/onboarding");
-      } catch (error) {
-        console.error("❌ Auth verification failed:", error);
-        router.push("/?error=auth_failed");
+      // Get token from URL query parameter
+      const token = searchParams.get('token');
+      console.log("🔑 Token from URL:", token ? `Found (${token.substring(0, 20)}...)` : "Not found");
+      
+      if (token) {
+        // Save token to localStorage
+        localStorage.setItem('auth_token', token);
+        console.log("💾 Token saved to localStorage");
+        
+        // Also save to cookies so middleware can access it
+        document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Lax`;
+        console.log("🍪 Token saved to cookies");
+        
+        // Verify the session by calling checkAuth
+        console.log("🔄 Verifying session...");
+        try {
+          await checkAuth();
+          console.log("✅ Auth verified, redirecting to onboarding");
+          router.push("/onboarding");
+        } catch (error) {
+          console.error("❌ Auth verification failed:", error);
+          router.push("/?error=auth_failed");
+        }
+      } else {
+        console.error("❌ No token in URL");
+        router.push("/?error=no_token");
       }
     };
 
     verifyAuth();
-  }, [router, checkAuth]);
+  }, [router, checkAuth, searchParams]);
 
   return (
     <div className="flex h-screen items-center justify-center bg-[#0d1117] text-white">
