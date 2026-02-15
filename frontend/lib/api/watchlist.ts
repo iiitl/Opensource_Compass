@@ -1,4 +1,5 @@
-import { API_BASE_URL } from "./auth-service";
+// Use relative URL to leverage Next.js rewrites and nginx proxy
+const CORE_SERVICE_URL = '/api/core';
 
 export interface WatchedRepo {
     id: number;
@@ -11,7 +12,7 @@ export interface WatchedRepo {
 }
 
 export async function getWatchlist(token: string): Promise<WatchedRepo[]> {
-    const res = await fetch(`${API_BASE_URL}/watchlist`, {
+    const res = await fetch(`${CORE_SERVICE_URL}/watchlist`, {
         headers: {
             Authorization: `Bearer ${token}`,
             // Pass user ID if needed by gateway, but typically token is enough for auth-service
@@ -45,7 +46,7 @@ export async function getWatchlist(token: string): Promise<WatchedRepo[]> {
 }
 
 export async function addToWatchlist(token: string, owner: string, name: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/watchlist`, {
+    const res = await fetch(`${CORE_SERVICE_URL}/watchlist`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -59,7 +60,7 @@ export async function addToWatchlist(token: string, owner: string, name: string)
 }
 
 export async function removeFromWatchlist(token: string, owner: string, name: string): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/watchlist?owner=${owner}&name=${name}`, {
+    const res = await fetch(`${CORE_SERVICE_URL}/watchlist?owner=${owner}&name=${name}`, {
         method: "DELETE",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -71,7 +72,7 @@ export async function removeFromWatchlist(token: string, owner: string, name: st
 }
 
 export async function checkIsWatched(token: string, owner: string, name: string): Promise<boolean> {
-    const res = await fetch(`${API_BASE_URL}/watchlist/check?owner=${owner}&name=${name}`, {
+    const res = await fetch(`${CORE_SERVICE_URL}/watchlist/check?owner=${owner}&name=${name}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
