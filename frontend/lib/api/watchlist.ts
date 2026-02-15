@@ -1,5 +1,5 @@
-// Use relative URL to leverage Next.js rewrites and nginx proxy
-const CORE_SERVICE_URL = '/api/core';
+// Use environment variable for backend URL
+const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
 
 export interface WatchedRepo {
     id: number;

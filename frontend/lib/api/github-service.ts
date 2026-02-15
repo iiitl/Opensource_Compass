@@ -83,7 +83,8 @@ export async function searchRepositoriesByName(query: string): Promise<Repositor
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const url = `/api/core/repos/search?q=${encodeURIComponent(query)}`;
+        const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
+        const url = `${CORE_SERVICE_URL}/repos/search?q=${encodeURIComponent(query)}`;
         console.log("Calling Core service:", url);
 
         const response = await fetch(url, {

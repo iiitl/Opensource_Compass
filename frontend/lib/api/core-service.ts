@@ -1,7 +1,7 @@
 // Core Service API Client
 
-// Use relative URL to leverage Next.js rewrites and HttpOnly cookies
-const CORE_SERVICE_URL = '/api/core';
+// Use environment variable for backend URL
+const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
 
 export interface Issue {
     title: string;
