@@ -40,8 +40,12 @@ func (c *GeminiClient) Chat(messages []Message) (string, error) {
 
 	b, _ := json.Marshal(body)
 
-	url := "https://generativelanguage.googleapis.com/v1/" +
-		c.model + ":generateContent?key=" + c.apiKey
+	// Ensure Gemini models have proper suffix
+	// Gemini 2.5+ models don't need -latest suffix, they work as-is
+	model := c.model
+
+	url := "https://generativelanguage.googleapis.com/v1beta/models/" +
+		model + ":generateContent?key=" + c.apiKey
 
 	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(b))
 	req.Header.Set("Content-Type", "application/json")

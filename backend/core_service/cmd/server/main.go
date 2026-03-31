@@ -19,29 +19,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// CORS middleware
-func corsMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		// Handle preflight requests
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
 
 func main() {
 	// Load the root .env file from the project root
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Println("No .env file found at ../../.env, checking current directory")
-		_ = godotenv.Load() // Fallback to local .env
-	}
+	// Load the root .env file from the project root (optional, for local dev)
+	_ = godotenv.Load("../../.env")
+	_ = godotenv.Load() // Fallback to local .env
 	cfg := config.Load()
 	aiClient := clients.NewAIClient(cfg.AISvcURL)
 	githubClient := clients.NewGitHubClient(cfg.GitHubSvcURL)
@@ -62,6 +46,9 @@ func main() {
 			// Actually, for missing column, we need it. But let's log and proceed.
 		}
 	}
+
+	// Debug: Print JWT secret (first 8 chars only)
+	log.Printf("🔑 Core Service JWT_SECRET: %s... (len: %d)", cfg.JWTSecret[:8], len(cfg.JWTSecret))
 
 	mux := http.NewServeMux()
 	routes.RegisterHealthRoutes(mux)
@@ -88,9 +75,7 @@ func main() {
 	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo, githubClient, aiClient)
 	routes.RegisterWatchlistRoutes(mux, watchlistRepo, cfg.JWTSecret)
 
-	// Wrap with CORS middleware
-	handler := corsMiddleware(mux)
-
+	// nginx handles CORS, so use mux directly
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, handler))
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
 }

@@ -1,0 +1,47 @@
+services:
+  - type: web
+    name: backend
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile.combined
+    dockerContext: ./backend
+    envVars:
+      # Database
+      - key: DATABASE_URL
+        sync: false
+      
+      # JWT Secret (shared across services)
+      - key: JWT_SECRET
+        sync: false
+      
+      # GitHub OAuth
+      - key: GITHUB_CLIENT_ID
+        sync: false
+      - key: GITHUB_CLIENT_SECRET
+        sync: false
+      - key: GITHUB_TOKEN
+        sync: false
+      
+      # AI Service
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: LLM_MODEL
+        value: gemini-2.0-flash-exp
+      
+      # Frontend URL
+      - key: FRONTEND_URL
+        sync: false
+      
+      # Service URLs (localhost since all in one container)
+      - key: GITHUB_SERVICE_URL
+        value: http://localhost:8081
+      - key: AI_SERVICE_URL
+        value: http://localhost:8082
+      - key: CORE_SERVICE_URL
+        value: http://localhost:8083
+      - key: NOTIFICATION_SERVICE_URL
+        value: http://localhost:8084

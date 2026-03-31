@@ -29,7 +29,7 @@ function AuthSuccessContent() {
     };
 
     verifyAuth();
-  }, [router, checkAuth]);
+  }, [router, checkAuth, searchParams]);
 
   return (
     <PageWrapper className="flex h-screen items-center justify-center text-white">

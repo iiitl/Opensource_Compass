@@ -23,7 +23,7 @@ export async function searchRepositories(
         const params = new URLSearchParams();
 
         if (languages.length > 0) {
-            params.append('languages', languages.join(','));
+            params.append('languages', languages.map(l => l.toLowerCase()).join(','));
         }
 
         if (frameworks.length > 0) {
@@ -31,9 +31,10 @@ export async function searchRepositories(
         }
 
         if (domains.length > 0) {
-            params.append('domain', domains.join(','));
+            params.append('domain', domains.map(d => d.toLowerCase()).join(','));
         }
 
+        // Use full backend URL for production
         const url = `${GITHUB_SERVICE_URL}/repos/search?${params.toString()}`;
 
         console.log("Calling GitHub service:", url);
@@ -82,7 +83,8 @@ export async function searchRepositoriesByName(query: string): Promise<Repositor
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const url = `/api/core/repos/search?q=${encodeURIComponent(query)}`;
+        const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
+        const url = `${CORE_SERVICE_URL}/repos/search?q=${encodeURIComponent(query)}`;
         console.log("Calling Core service:", url);
 
         const response = await fetch(url, {

@@ -3,6 +3,7 @@ package github
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -53,8 +54,16 @@ func FetchUser(token string) (map[string]interface{}, error) {
 	}
 	defer resp.Body.Close()
 
+	bodyBytes, _ := io.ReadAll(resp.Body)
+	fmt.Printf("DEBUG: GitHub User Response: %s\n", string(bodyBytes))
+
 	var user map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&user)
+	json.Unmarshal(bodyBytes, &user)
+
+	// Check for GitHub API error
+	if errMsg, ok := user["message"].(string); ok {
+		fmt.Printf("DEBUG: GitHub API Error: %s\n", errMsg)
+	}
 
 	// Fetch email if not public
 	if user["email"] == nil || user["email"] == "" {

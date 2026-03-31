@@ -22,7 +22,8 @@ export default function AuthCard() {
         size="lg"
         className="bg-gradient-to-r from-[#238636] to-[#2ea043] hover:from-[#2ea043] hover:to-[#3fb950] w-full text-base py-6 shadow-lg shadow-green-900/20"
         onClick={() => {
-          window.location.href = "/api/auth/github";
+          const authUrl = `${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/auth/github`;
+          window.location.href = authUrl;
         }}
       >
         <Github className="mr-2 h-5 w-5" />

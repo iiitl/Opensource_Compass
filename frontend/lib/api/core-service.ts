@@ -1,7 +1,7 @@
 // Core Service API Client
 
-// Use relative URL to leverage Next.js rewrites and HttpOnly cookies
-const CORE_SERVICE_URL = '/api/core';
+// Use environment variable for backend URL
+const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
 
 export interface Issue {
     title: string;
@@ -25,11 +25,16 @@ export interface Recommendation {
 
 export async function getRecommendations(): Promise<Recommendation> {
     try {
-        // No need to manually pass token, cookies are automatically sent
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`${CORE_SERVICE_URL}/recommendations`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
         });
 
         if (!response.ok) {
@@ -100,11 +105,18 @@ export interface SetupGuide {
 }
 
 export async function getSetupGuide(owner: string, repo: string, userId: string): Promise<SetupGuide> {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const encodedUserId = encodeURIComponent(userId);
     const response = await fetch(`${CORE_SERVICE_URL}/repo/setup-guide?repo=${owner}/${repo}&user_id=${encodedUserId}`, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        method: 'GET',
+        headers,
     });
 
     if (!response.ok) {

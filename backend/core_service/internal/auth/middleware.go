@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -20,10 +21,14 @@ func JWTMiddleware(secret string, next http.Handler) http.Handler {
 		}
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
+		
+		// Debug logging
+		// log.Printf("DebugAuth: validating token: %s...", token[:10])
 
 		userID, err := ExtractUserID(token, secret)
 		if err != nil {
-			http.Error(w, "invalid token", http.StatusUnauthorized)
+			log.Printf("❌ Auth Failed: %v. Secret len: %d", err, len(secret))
+			http.Error(w, "invalid token: "+err.Error(), http.StatusUnauthorized)
 			return
 		}
 

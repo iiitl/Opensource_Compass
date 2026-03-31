@@ -1,6 +1,7 @@
 // Preferences API Client
 
-const PREFERENCES_URL = '/api/core/preferences';
+const CORE_SERVICE_URL = process.env.NEXT_PUBLIC_CORE_SERVICE_URL;
+const PREFERENCES_URL = `${CORE_SERVICE_URL}/preferences`;
 
 export interface SavePreferencesRequest {
     languages: string[];
@@ -11,11 +12,17 @@ export interface SavePreferencesRequest {
 
 export async function savePreferences(data: SavePreferencesRequest): Promise<void> {
     try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(PREFERENCES_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify(data),
         });
 
@@ -43,11 +50,17 @@ export interface UserPreferences {
 
 export async function getPreferences(): Promise<UserPreferences> {
     try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
+        const headers: HeadersInit = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(PREFERENCES_URL, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
         });
 
         if (!response.ok) {
@@ -68,7 +81,7 @@ export async function getPreferences(): Promise<UserPreferences> {
 
 export async function syncEmail(userId: string): Promise<{ message: string; email: string }> {
     try {
-        const response = await fetch(`/api/core/users/${userId}/sync-email`, {
+        const response = await fetch(`${CORE_SERVICE_URL}/users/${userId}/sync-email`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
