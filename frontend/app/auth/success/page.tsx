@@ -3,6 +3,7 @@
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import PageWrapper from "@/components/ui/page-wrapper";
 
 function AuthSuccessContent() {
   const router = useRouter();
@@ -20,7 +21,7 @@ function AuthSuccessContent() {
       try {
         await checkAuth();
         console.log("🔀 Redirecting to onboarding");
-        router.push("/onboarding");
+        router.replace("/onboarding");
       } catch (error) {
         console.error("❌ Auth verification failed:", error);
         router.push("/?error=auth_failed");
@@ -31,7 +32,7 @@ function AuthSuccessContent() {
   }, [router, checkAuth]);
 
   return (
-    <div className="flex h-screen items-center justify-center bg-[#0d1117] text-white">
+    <PageWrapper className="flex h-screen items-center justify-center text-white">
       <div className="text-center space-y-4">
         <h1 className="text-2xl font-semibold">Authenticating...</h1>
         <p className="text-[#8b949e]">Please wait while we log you in.</p>
@@ -39,20 +40,20 @@ function AuthSuccessContent() {
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#30363d] border-t-[#2f81f7]"></div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   );
 }
 
 export default function AuthSuccessPage() {
   return (
     <Suspense fallback={
-      <div className="flex h-screen items-center justify-center bg-[#0d1117] text-white">
+      <PageWrapper className="flex h-screen items-center justify-center text-white">
         <div className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#30363d] border-t-[#2f81f7]"></div>
           </div>
         </div>
-      </div>
+      </PageWrapper>
     }>
       <AuthSuccessContent />
     </Suspense>

@@ -3,6 +3,7 @@
 import { useNotifications } from "@/contexts/notification-context";
 import { Bell, ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
+import PageWrapper from "@/components/ui/page-wrapper";
 
 export default function NotificationsPage() {
   const { notifications, unreadCount, markAllAsRead, isConnected } = useNotifications();
@@ -20,7 +21,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#c9d1d9] p-6">
+    <PageWrapper className="min-h-screen text-[#c9d1d9] p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -65,7 +66,7 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-blue-500/50 transition-colors"
+                className="bg-[#161b22]/60 backdrop-blur-md border border-[#30363d] rounded-lg p-4 hover:border-blue-500/50 transition-colors"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -106,6 +107,6 @@ export default function NotificationsPage() {
           </div>
         )}
       </div>
-    </div>
+    </PageWrapper>
   );
 }

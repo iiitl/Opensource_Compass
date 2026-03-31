@@ -29,7 +29,7 @@ export default function FeaturedIssues({ issues, repoId }: FeaturedIssuesProps) 
         {displayIssues.map((issue, index) => (
           <div
             key={index}
-            className="bg-[#0d1117] border border-[#30363d] rounded-xl p-5 hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all group"
+            className="bg-[#0d1117]/60 backdrop-blur-sm border border-[#30363d] rounded-xl p-5 hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all group"
           >
             <div className="space-y-3">
               <h3 className="font-medium leading-snug line-clamp-2 group-hover:text-[#2f81f7] transition-colors">

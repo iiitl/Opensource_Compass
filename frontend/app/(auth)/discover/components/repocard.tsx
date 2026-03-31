@@ -55,7 +55,7 @@ export default function RepoCard({ repo }: RepoCardProps) {
   const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
 
   return (
-    <div className="bg-[#0d1117] border border-[#30363d] rounded-xl p-6 flex flex-col justify-between hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all hover:-translate-y-1 group">
+    <div className="bg-[#0d1117]/60 backdrop-blur-sm border border-[#30363d] rounded-xl p-5 hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all flex flex-col h-full group">
 
       {/* Header */}
       <div className="space-y-3">
@@ -118,7 +118,7 @@ export default function RepoCard({ repo }: RepoCardProps) {
         </Button>
         <Button
           variant="secondary"
-          className="flex-1 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d]"
+          className="flex-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border border-[#30363d]"
           onClick={() => window.open(repo.html_url, '_blank')}
         >
           <ExternalLink className="h-4 w-4 mr-2" />

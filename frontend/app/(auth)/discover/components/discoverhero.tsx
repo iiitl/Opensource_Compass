@@ -28,8 +28,8 @@ export default function DiscoverHero({ username, repoCount, onRefresh, isLoading
         <Button
           onClick={onRefresh}
           disabled={isLoading}
-          variant="outline"
-          className="border-[#30363d] hover:bg-[#161b22] shrink-0"
+          variant="secondary"
+          className="bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border-[#30363d] shrink-0"
         >
           <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh

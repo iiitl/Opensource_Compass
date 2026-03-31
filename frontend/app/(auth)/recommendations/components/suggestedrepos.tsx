@@ -1,7 +1,9 @@
 "use client";
 
-import { Star, GitFork, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
+import { Repository, fetchRepository } from "@/lib/api/github-service";
+import RepoCard from "../../discover/components/repocard";
+import SkeletonCard from "../../discover/components/skeletoncard";
 
 interface SuggestedReposProps {
   repos: string[];
@@ -9,10 +11,45 @@ interface SuggestedReposProps {
 }
 
 export default function SuggestedRepos({ repos, topRepoId }: SuggestedReposProps) {
-  // Filter out the top repo and show next 5
-  const otherRepos = repos.filter(r => r !== topRepoId).slice(0, 6);
+  const [detailedRepos, setDetailedRepos] = useState<Repository[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (otherRepos.length === 0) {
+  useEffect(() => {
+    const loadRepos = async () => {
+      // Filter out top repo
+      const otherRepos = repos.filter(r => r !== topRepoId).slice(0, 6);
+      
+      if (otherRepos.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const promises = otherRepos.map(async (repoId) => {
+          const [owner, name] = repoId.split('/');
+          // Add error handling per request so one failure doesn't break all
+          try {
+            return await fetchRepository(owner, name);
+          } catch (e) {
+            console.error(`Failed to fetch suggested repo ${repoId}`, e);
+            return null;
+          }
+        });
+        
+        const results = await Promise.all(promises);
+        setDetailedRepos(results.filter((r): r is Repository => r !== null));
+      } catch (err) {
+        console.error("Failed to load suggested repos", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRepos();
+  }, [repos, topRepoId]);
+
+  if (!loading && detailedRepos.length === 0) {
     return null;
   }
 
@@ -23,49 +60,15 @@ export default function SuggestedRepos({ repos, topRepoId }: SuggestedReposProps
         <p className="text-[#8b949e] mt-1">Other repositories that match your interests</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {otherRepos.map((repoId, index) => {
-          const [owner, repo] = repoId.split('/');
-          
-          return (
-            <div
-              key={repoId}
-              className="bg-[#0d1117] border border-[#30363d] rounded-xl p-5 hover:border-[#2f81f7]/50 hover:shadow-md hover:shadow-[#2f81f7]/5 transition-all group"
-            >
-              <div className="space-y-3">
-                <div>
-                  <h3 className="font-semibold text-lg group-hover:text-[#2f81f7] transition-colors truncate">
-                    {repo}
-                  </h3>
-                  <p className="text-sm text-[#6e7681] truncate">{owner}</p>
-                </div>
-
-                <div className="flex items-center gap-4 text-sm text-[#8b949e]">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4" />
-                    <span>-</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <GitFork className="h-4 w-4" />
-                    <span>-</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-[#30363d] hover:bg-[#161b22]"
-                  onClick={() => window.open(`https://github.com/${repoId}`, '_blank')}
-                >
-                  <ExternalLink className="h-3.5 w-3.5 mr-2" />
-                  Explore
-                </Button>
-              </div>
-            </div>
-          );
-        })}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          // Show skeletons while loading
+          [...Array(3)].map((_, i) => <SkeletonCard key={i} />)
+        ) : (
+          detailedRepos.map((repo) => (
+             <RepoCard key={repo.full_name} repo={repo} />
+          ))
+        )}
       </div>
     </div>
   );

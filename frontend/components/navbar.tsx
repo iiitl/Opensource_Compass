@@ -26,8 +26,8 @@ export default function NavbarDemo() {
       link: "#approach",
     },
     {
-      name: "Contact",
-      link: "#contact",
+      name: "Community",
+      link: "https://github.com/Vedant1703/Opensource_Compass/discussions",
     },
   ];
 
@@ -46,7 +46,6 @@ export default function NavbarDemo() {
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
             <NavbarButton variant="secondary" onClick={handleLogin}>Login</NavbarButton>
-            <NavbarButton variant="primary">Book a call</NavbarButton>
           </div>
         </NavBody>
 
@@ -84,13 +83,6 @@ export default function NavbarDemo() {
                 className="w-full"
               >
                 Login
-              </NavbarButton>
-              <NavbarButton
-                onClick={() => setIsMobileMenuOpen(false)}
-                variant="primary"
-                className="w-full"
-              >
-                Book a call
               </NavbarButton>
             </div>
           </MobileNavMenu>

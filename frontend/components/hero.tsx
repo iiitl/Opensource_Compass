@@ -3,6 +3,9 @@
 import { useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { CloudLightning, Github, Lightbulb } from "lucide-react";
+import Particles from "@/components/ui/particles";
+
+import Link from "next/link";
 import gsap from "gsap";
 
 export default function HeroSection() {
@@ -32,6 +35,12 @@ export default function HeroSection() {
         stagger: 0.03,
         ease: "back.out(1.8)",
       })
+      .from(".gradient-text", {
+         opacity: 0,
+         scale: 0.9,
+         duration: 1,
+         ease: "power2.out"
+      }, "-=0.5")
         .from(
           ".hero-sub",
           {
@@ -73,36 +82,53 @@ export default function HeroSection() {
     >
       {/* Subtle background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-[#0d1117] via-[#0d1117] to-[#010409]" />
+      
+      {/* Particles Animation */}
+      <div className="absolute inset-0 z-0">
+        <Particles
+            className="absolute inset-0"
+            quantity={50}
+            staticity={30}
+            ease={50}
+            refresh
+        />
+      </div>
 
       <div className="relative z-10 max-w-6xl w-full px-6 py-20 grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
         {/* LEFT CONTENT */}
         <div className="space-y-6 text-center md:text-left">
-<h1 className="text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-none ">
-  <span className="block py-4 overflow-hidden">
-    <SplitText text="Start Open Source" />
-  </span>
+          
+          <div className="relative">
+            {/* Static background blur for text specific area */}
+            <div className="absolute -inset-1 rounded-lg bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-20 blur-2xl"></div>
+            
+            <h1 className="relative text-4xl md:text-5xl xl:text-6xl font-semibold tracking-tight leading-tight">
+              <span className="block overflow-visible pb-2">
+                <SplitText text="Start Open Source" />
+              </span>
+            
+              <span className="block overflow-visible -mt-2 pb-2">
+                <SplitText text="the " />
+                {/* Fixed "Right Way" text - Removed SplitText to ensure visibility */}
+                <span className="gradient-text text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 glow-text inline-block">
+                  Right Way
+                </span>
+              </span>
+            </h1>
+          </div>
 
-  <span className="block overflow-hidden -mt-2">
-    <SplitText text="the " />
-    <span className="text-[#2f81f7] glow-text inline-block">
-      <SplitText text="Right Way" />
-    </span>
-  </span>
-</h1>
-
-
-          <p className="hero-sub text-base md:text-lg text-[#8b949e] max-w-xl mx-auto md:mx-0">
+          <p className="hero-sub text-base md:text-lg text-[#8b949e] max-w-xl mx-auto md:mx-0 relative z-10">
             Discover beginner-friendly open source projects and issues tailored
             to your tech stack — guided by AI, backed by GitHub data.
           </p>
 
           <div className="hero-cta flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
             <Button
+              asChild
               size="lg"
               className="bg-[#238636] hover:bg-[#2ea043] text-white px-6 py-5 text-base font-medium"
-           onClick={() => { window.location.href = "/onboarding"; }}
->
-              Get Started
+            >
+              <Link href="/onboarding">Get Started</Link>
             </Button>
           </div>
 
@@ -120,7 +146,7 @@ export default function HeroSection() {
               border border-[#30363d]
               bg-[#161b22]
               overflow-hidden
-              shadow-[0_0_100px_rgba(59,130,246,0.35)]
+              shadow-[0_0_100px_rgba(59,130,246,0.25)]
               scale-[1.2]
               lg:scale-[1.3]
               translate-x-10
@@ -137,11 +163,6 @@ export default function HeroSection() {
             />
           </div>
         </div>
-
-
-
-
-
       </div>
     </section>
   );

@@ -9,6 +9,7 @@ import ActiveFilters from "./components/activefilters";
 import RepoGrid from "./components/repogrid";
 import SkeletonCard from "./components/skeletoncard";
 import EmptyState from "./components/emptystate";
+import PageWrapper from "@/components/ui/page-wrapper";
 
 export default function DiscoverPage() {
   const [repos, setRepos] = useState<Repository[]>([]);
@@ -78,7 +79,7 @@ export default function DiscoverPage() {
   const showFilters = !searchQuery && hasPreferences;
 
   return (
-    <div className="space-y-6">
+    <PageWrapper className="space-y-6">
       {/* Hero Section */}
       <DiscoverHero
         username={username}
@@ -88,7 +89,7 @@ export default function DiscoverPage() {
       />
 
       {/* Search Input */}
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-4 my-8">
         <SearchInput onSearch={handleSearch} />
       </div>
 
@@ -129,6 +130,6 @@ export default function DiscoverPage() {
       {repos.length > 0 && !loading && !error && (
         <RepoGrid repos={repos} />
       )}
-    </div>
+    </PageWrapper>
   );
 }

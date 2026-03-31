@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { getSetupGuide, SetupGuide } from '@/lib/api/core-service';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import PageWrapper from '@/components/ui/page-wrapper';
 
 export default function SetupGuidePage() {
     const { owner, repo } = useParams() as { owner: string; repo: string };
@@ -62,7 +63,7 @@ export default function SetupGuidePage() {
     }
 
     return (
-        <div className="text-white font-sans">
+        <PageWrapper className="text-white font-sans">
             <main className="container mx-auto px-4 py-8 max-w-4xl">
                 <div className="mb-8">
                     <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
@@ -95,7 +96,7 @@ export default function SetupGuidePage() {
                             <h2 className="text-2xl font-semibold mb-4 text-white">Prerequisites</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {guide.prerequisites.map((req, i) => (
-                                    <Card key={i} className="p-4 bg-zinc-900 border-zinc-800">
+                                    <Card key={i} className="p-4 bg-zinc-900/60 backdrop-blur-md border-zinc-800">
                                         <div className="flex items-start gap-3">
                                             <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 shrink-0" />
                                             <span className="text-gray-300">{req}</span>
@@ -118,7 +119,7 @@ export default function SetupGuidePage() {
                                             <h3 className="text-lg font-medium text-white">{step.description}</h3>
                                         </div>
                                         {step.command && (
-                                            <div className="bg-zinc-900 rounded-lg p-4 font-mono text-sm border border-zinc-800 overflow-x-auto relative group">
+                                            <div className="bg-zinc-900/60 backdrop-blur-md rounded-lg p-4 font-mono text-sm border border-zinc-800 overflow-x-auto relative group">
                                                 <code className="text-green-400">{step.command}</code>
                                                 <Button
                                                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs h-8 px-2"
@@ -139,14 +140,14 @@ export default function SetupGuidePage() {
                                 <h2 className="text-2xl font-semibold mb-4 text-white">Environment Variables</h2>
                                 <div className="overflow-hidden rounded-lg border border-zinc-800">
                                     <table className="w-full text-left text-sm text-gray-400">
-                                        <thead className="bg-zinc-900 text-gray-200">
+                                        <thead className="bg-zinc-900/80 backdrop-blur-md text-gray-200">
                                             <tr>
                                                 <th className="px-6 py-3">Variable</th>
                                                 <th className="px-6 py-3">Description</th>
                                                 <th className="px-6 py-3">Required</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-zinc-800 bg-black">
+                                        <tbody className="divide-y divide-zinc-800 bg-black/40 backdrop-blur-md">
                                             {guide.environment_variables.map((env, i) => (
                                                 <tr key={i} className="hover:bg-zinc-900/50">
                                                     <td className="px-6 py-4 font-mono text-purple-400">{env.name}</td>
@@ -172,7 +173,7 @@ export default function SetupGuidePage() {
                                 <h2 className="text-2xl font-semibold mb-4 text-white">Common Pitfalls</h2>
                                 <div className="grid gap-4">
                                     {guide.common_errors.map((item, i) => (
-                                        <div key={i} className="p-4 bg-orange-950/20 border border-orange-900/30 rounded-lg">
+                                        <div key={i} className="p-4 bg-orange-950/40 backdrop-blur-md border border-orange-900/30 rounded-lg">
                                             <h3 className="text-orange-400 font-medium mb-1 flex items-center gap-2">
                                                 ⚠️ {item.error}
                                             </h3>
@@ -189,7 +190,7 @@ export default function SetupGuidePage() {
                         {guide.contribution_tips && guide.contribution_tips.length > 0 && (
                             <section>
                                 <h2 className="text-2xl font-semibold mb-4 text-white">Contribution Tips</h2>
-                                <div className="bg-zinc-900/50 p-6 rounded-xl border border-zinc-800">
+                                <div className="bg-zinc-900/60 backdrop-blur-md p-6 rounded-xl border border-zinc-800">
                                     <ul className="space-y-3">
                                         {guide.contribution_tips.map((tip, i) => (
                                             <li key={i} className="flex gap-3 text-gray-300">
@@ -205,6 +206,6 @@ export default function SetupGuidePage() {
                     </div>
                 )}
             </main>
-        </div>
+        </PageWrapper>
     );
 }

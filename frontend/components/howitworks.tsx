@@ -94,12 +94,43 @@ import {
 import { WorkflowStepCard } from "./ui/tracingbeam";
 import { ArrowConnector } from "./ui/tracingbeam";
 
+
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
+
 export default function WorkflowSection() {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".workflow-animate",
+        { opacity: 0, y: 50 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          stagger: 0.2,
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: "top 80%",
+            toggleActions: "play none none reverse",
+          },
+        }
+      );
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section id="flow" className="bg-[#010409] text-white py-28">
+    <section id="flow" ref={containerRef} className="bg-[#010409] text-white py-28">
       <div className="max-w-6xl mx-auto px-6">
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-16 workflow-animate">
           <h2 className="text-3xl md:text-4xl font-semibold">
             How it works
           </h2>
@@ -110,7 +141,7 @@ export default function WorkflowSection() {
         </div>
 
         {/* Desktop Workflow */}
-        <div className="hidden md:flex items-center justify-between">
+        <div className="hidden md:flex items-center justify-between workflow-animate">
           <WorkflowStepCard
             icon={<Sparkles className="h-6 w-6 text-[#2f81f7]" />}
             title="Choose your tech stack"
@@ -138,7 +169,7 @@ export default function WorkflowSection() {
         </div>
 
         {/* Mobile Workflow */}
-        <div className="md:hidden space-y-4">
+        <div className="md:hidden space-y-4 workflow-animate">
           <WorkflowStepCard
             icon={<Sparkles className="h-6 w-6 text-[#2f81f7]" />}
             title="Choose your tech stack"

@@ -239,7 +239,7 @@ export const NavbarLogo = () => {
       {/* Logo Icon */}
       <img
         src="assets/logo.png"
-        alt="ContriBot logo"
+        alt="OS Compass logo"
         width={42}
         height={42}
         className="
@@ -253,8 +253,8 @@ export const NavbarLogo = () => {
 
       {/* Logo Text */}
       <span className="text-xl font-bold tracking-tight leading-none">
-        <span className="text-white">Contri</span>
-        <span className="text-[#4f8cff]">Bot</span>
+        <span className="text-white">OS</span>
+        <span className="text-[#4f8cff] ml-1">Compass</span>
       </span>
     </a>
   );

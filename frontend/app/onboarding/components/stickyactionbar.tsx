@@ -22,11 +22,12 @@ export default function StickyActionBar({
         <div className="flex justify-end">
           <Button
             onClick={onContinue}
-            disabled={!isValid || isLoading}
-            className={`px-6 ${
-              isValid && !isLoading
-                ? "bg-[#2f81f7]"
-                : "bg-[#30363d] cursor-not-allowed"
+            disabled={!isValid || isLoading || !!error}
+            size="lg"
+            className={`px-8 transition-all duration-300 ${
+              isValid && !isLoading && !error
+                ? "bg-gradient-to-r from-[#238636] to-[#2ea043] hover:from-[#2ea043] hover:to-[#3fb950] shadow-lg shadow-green-900/20 hover:shadow-green-900/40 text-white transform hover:scale-105"
+                : "bg-[#30363d] cursor-not-allowed opacity-50"
             }`}
           >
             {isLoading ? "Saving..." : "Continue"}
