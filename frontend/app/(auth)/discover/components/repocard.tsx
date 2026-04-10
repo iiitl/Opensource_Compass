@@ -19,6 +19,7 @@ const languageColors: Record<string, string> = {
   PHP: "#4F5D95",
   Swift: "#ffac45",
   Kotlin: "#A97BFF",
+  "C#": '#178600',
 };
 
 export default function RepoCard({ repo }: RepoCardProps) {
@@ -52,8 +53,6 @@ export default function RepoCard({ repo }: RepoCardProps) {
     return diffInDays <= 30;
   };
 
-  const languageColor = repo.language ? languageColors[repo.language] || "#8b949e" : "#8b949e";
-
   return (
     <div className="bg-[#0d1117]/60 backdrop-blur-sm border border-[#30363d] rounded-xl p-5 hover:border-[#2f81f7] hover:shadow-lg hover:shadow-[#2f81f7]/10 transition-all flex flex-col h-full group">
 
@@ -80,51 +79,54 @@ export default function RepoCard({ repo }: RepoCardProps) {
 
         {/* Language Badge */}
         {repo.language && (
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#161b22] border border-[#30363d] rounded-full text-xs">
-            <div
-              className="w-2.5 h-2.5 rounded-full"
-              style={{ backgroundColor: languageColor }}
+          <span className="flex items-center gap-1.5 text-sm text-[#8b949e]">
+            <span
+              className="w-3 h-3 rounded-full shrink-0"
+              style={{
+                backgroundColor:
+                  languageColors[repo.language] ?? "#8b949e",
+              }}
             />
-            <span>{repo.language}</span>
-          </div>
+            {repo.language}
+          </span>
         )}
-      </div>
 
-      {/* Meta */}
-      <div className="mt-5 flex items-center justify-between text-sm text-[#8b949e] border-t border-[#30363d] pt-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <Star className="h-4 w-4" />
-            <span>{formatStars(repo.stargazers_count)}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4" />
-            <span className="text-xs">{timeSinceUpdate(repo.updated_at)}</span>
+        {/* Meta */}
+        <div className="mt-5 flex items-center justify-between text-sm text-[#8b949e] border-t border-[#30363d] pt-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <Star className="h-4 w-4" />
+              <span>{formatStars(repo.stargazers_count)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-4 w-4" />
+              <span className="text-xs">{timeSinceUpdate(repo.updated_at)}</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className="mt-5 flex gap-3">
-        <Button
-          asChild
-          variant="default"
-          className="flex-1 bg-[#2f81f7] hover:bg-[#2f81f7]/90 text-white border border-transparent"
-        >
-          <Link href={`/repo/${repo.owner}/${repo.name}/setup`}>
-            <Settings className="h-4 w-4 mr-2" />
-            Setup
-          </Link>
-        </Button>
-        <Button
-          variant="secondary"
-          className="flex-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border border-[#30363d]"
-          onClick={() => window.open(repo.html_url, '_blank')}
-        >
-          <ExternalLink className="h-4 w-4 mr-2" />
-          View on GitHub
-        </Button>
+        {/* Actions */}
+        <div className="mt-5 flex gap-3">
+          <Button
+            asChild
+            variant="default"
+            className="flex-1 bg-[#2f81f7] hover:bg-[#2f81f7]/90 text-white border border-transparent"
+          >
+            <Link href={`/repo/${repo.owner}/${repo.name}/setup`}>
+              <Settings className="h-4 w-4 mr-2" />
+              Setup
+            </Link>
+          </Button>
+          <Button
+            variant="secondary"
+            className="flex-1 bg-[#21262d] hover:bg-[#30363d] text-[#c9d1d9] border border-[#30363d]"
+            onClick={() => window.open(repo.html_url, '_blank')}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            View on GitHub
+          </Button>
+        </div>
       </div>
-    </div>
+    </div>  
   );
 }
