@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import PageWrapper from '@/components/ui/page-wrapper';
 
 export default function SetupGuidePage() {
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
     const { owner, repo } = useParams() as { owner: string; repo: string };
     const { userId, isAuthenticated, isLoading: authLoading } = useAuth();
     const router = useRouter();
@@ -122,10 +123,14 @@ export default function SetupGuidePage() {
                                             <div className="bg-zinc-900/60 backdrop-blur-md rounded-lg p-4 font-mono text-sm border border-zinc-800 overflow-x-auto relative group">
                                                 <code className="text-green-400">{step.command}</code>
                                                 <Button
-                                                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs h-8 px-2"
-                                                    onClick={() => navigator.clipboard.writeText(step.command)}
+                                                    className="absolute top-2 right-2 text-xs h-8 px-2 transition-colors"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(step.command);
+                                                        setCopiedIndex(i);
+                                                        setTimeout(() => setCopiedIndex(null), 2000);
+                                                    }}
                                                 >
-                                                    Copy
+                                                    {copiedIndex === i ? '✓ Copied!' : 'Copy'}
                                                 </Button>
                                             </div>
                                         )}
