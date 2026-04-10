@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { getPreferences, savePreferences, UserPreferences } from "@/lib/api/preferences";
+import { getPreferences, savePreferences } from "@/lib/api/preferences";
 import { useRouter } from "next/navigation";
 import { Loader2, Check, X, Save } from "lucide-react";
 import PageWrapper from "@/components/ui/page-wrapper";
@@ -24,18 +24,15 @@ export default function SettingsPage() {
   const { username, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
-  // Form state
   const [experienceLevel, setExperienceLevel] = useState<string>("Beginner");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
 
-  // UI state
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load preferences on mount
   useEffect(() => {
     const loadPreferences = async () => {
       try {
@@ -72,6 +69,26 @@ export default function SettingsPage() {
         ? prev.filter((t) => t !== topic)
         : [...prev, topic]
     );
+    setSaved(false);
+  };
+
+  const handleSelectAllLanguages = () => {
+    setSelectedLanguages(AVAILABLE_LANGUAGES);
+    setSaved(false);
+  };
+
+  const handleClearLanguages = () => {
+    setSelectedLanguages([]);
+    setSaved(false);
+  };
+
+  const handleSelectAllTopics = () => {
+    setSelectedTopics(AVAILABLE_TOPICS);
+    setSaved(false);
+  };
+
+  const handleClearTopics = () => {
+    setSelectedTopics([]);
     setSaved(false);
   };
 
@@ -112,7 +129,6 @@ export default function SettingsPage() {
   return (
     <PageWrapper>
       <div className="space-y-6 max-w-4xl mx-auto px-6 pt-6">
-        {/* Header */}
         <div>
           <h1 className="text-2xl md:text-3xl font-semibold text-[#c9d1d9]">
             Settings
@@ -122,7 +138,6 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Success/Error Messages */}
         {saved && (
           <div className="bg-[#238636]/10 border border-[#238636]/30 rounded-lg p-4 flex items-center gap-3">
             <Check className="h-5 w-5 text-[#3fb950]" />
@@ -137,7 +152,6 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {/* Experience Level */}
         <div className="bg-[#0d1117]/60 backdrop-blur-md border border-[#30363d] rounded-xl p-6">
           <h3 className="text-lg font-semibold text-[#c9d1d9] mb-2">
             Experience Level
@@ -165,11 +179,26 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Programming Languages */}
         <div className="bg-[#0d1117]/60 backdrop-blur-md border border-[#30363d] rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-[#c9d1d9] mb-2">
-            Programming Languages
-          </h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-[#c9d1d9]">
+              Programming Languages
+            </h3>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSelectAllLanguages}
+                className="text-xs px-2 py-1 rounded bg-[#161b22] border border-[#30363d] text-[#8b949e] hover:text-[#c9d1d9] transition-colors"
+              >
+                Select All
+              </button>
+              <button
+                onClick={handleClearLanguages}
+                className="text-xs px-2 py-1 rounded bg-[#161b22] border border-[#30363d] text-[#8b949e] hover:text-red-400 transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
           <p className="text-sm text-[#8b949e] mb-4">
             Select the languages you're interested in or want to learn
           </p>
@@ -190,11 +219,26 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Topics & Domains */}
         <div className="bg-[#0d1117]/60 backdrop-blur-md border border-[#30363d] rounded-xl p-6">
-          <h3 className="text-lg font-semibold text-[#c9d1d9] mb-2">
-            Topics & Domains
-          </h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-[#c9d1d9]">
+              Topics & Domains
+            </h3>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSelectAllTopics}
+                className="text-xs px-2 py-1 rounded bg-[#161b22] border border-[#30363d] text-[#8b949e] hover:text-[#c9d1d9] transition-colors"
+              >
+                Select All
+              </button>
+              <button
+                onClick={handleClearTopics}
+                className="text-xs px-2 py-1 rounded bg-[#161b22] border border-[#30363d] text-[#8b949e] hover:text-red-400 transition-colors"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
           <p className="text-sm text-[#8b949e] mb-4">
             Choose areas of interest for more relevant project suggestions
           </p>
@@ -215,7 +259,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex items-center gap-3 pt-4">
           <button
             onClick={handleSave}
@@ -243,7 +286,6 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {/* Helpful tip */}
         <div className="bg-[#1f6feb]/10 border border-[#1f6feb]/30 rounded-lg p-4">
           <p className="text-sm text-[#58a6ff]">
             💡 <strong>Tip:</strong> Your preferences help us find repositories that match your interests.
