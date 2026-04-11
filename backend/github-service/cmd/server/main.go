@@ -3,14 +3,36 @@ package main
 import (
 	"github-service/routes"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
+// corsMiddleware adds CORS headers and handles preflight OPTIONS requests.
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		frontendURL := os.Getenv("FRONTEND_URL")
+		if frontendURL == "" {
+			frontendURL = "http://localhost:3000"
+		}
+
+		c.Header("Access-Control-Allow-Origin", frontendURL)
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+
+		if c.Request.Method == http.MethodOptions {
+			c.AbortWithStatus(http.StatusNoContent)
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func main() {
-	// Load the root .env file from the project root
 	// Load the root .env file from the project root (optional, for local dev)
 	_ = godotenv.Load("../../.env")
 	_ = godotenv.Load() // Fallback to local .env
@@ -24,7 +46,8 @@ func main() {
 
 	r := gin.Default()
 
-	// nginx handles CORS, so no middleware needed here
+	// Apply CORS middleware so browser preflight OPTIONS requests are handled
+	r.Use(corsMiddleware())
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{

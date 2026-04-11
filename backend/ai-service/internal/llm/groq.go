@@ -16,8 +16,8 @@ type GroqClient struct {
 
 func NewGroqClient(model string) *GroqClient {
 	if model == "" {
-		// Default to fast Mixtral model with large context
-		model = "mixtral-8x7b-32768"
+		// Default to llama-3.3-70b-versatile (mixtral-8x7b-32768 was decommissioned)
+		model = "llama-3.3-70b-versatile"
 	}
 	return &GroqClient{
 		apiKey: os.Getenv("GROQ_API_KEY"),

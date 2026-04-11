@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"core-service/config"
+	"core-service/internal/auth"
 	"core-service/internal/clients"
 	"core-service/internal/db"
 	"core-service/internal/orchestration"
@@ -75,7 +76,8 @@ func main() {
 	routes.RegisterRoutes(mux, orchService, cfg.JWTSecret, prefRepo, userRepo, githubClient, aiClient)
 	routes.RegisterWatchlistRoutes(mux, watchlistRepo, cfg.JWTSecret)
 
-	// nginx handles CORS, so use mux directly
+	// Wrap mux with CORS middleware so browser preflight OPTIONS requests are handled.
+	handler := auth.CORSMiddleware(mux)
 	log.Printf("Core service running on :%s\n", cfg.ServerPort)
-	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, mux))
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerPort, handler))
 }
