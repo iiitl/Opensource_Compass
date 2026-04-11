@@ -4,21 +4,11 @@ import { useNotifications } from "@/contexts/notification-context";
 import { Bell, ExternalLink, Trash2 } from "lucide-react";
 import Link from "next/link";
 import PageWrapper from "@/components/ui/page-wrapper";
+import { TimeAgo } from "@/components/ui/time-ago";
 
 export default function NotificationsPage() {
   const { notifications, unreadCount, markAllAsRead, isConnected } = useNotifications();
 
-  const formatTimeAgo = (date: Date) => {
-    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
-    if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  };
 
   return (
     <PageWrapper className="min-h-screen text-[#c9d1d9] p-6">
@@ -75,9 +65,10 @@ export default function NotificationsPage() {
                       <span className="text-sm font-semibold text-blue-400">
                         {notification.repo}
                       </span>
-                      <span className="text-xs text-gray-500">
-                        {formatTimeAgo(notification.timestamp)}
-                      </span>
+                      <TimeAgo 
+                        date={notification.timestamp} 
+                        className="text-xs text-gray-500" 
+                      />
                     </div>
                     
                     <div className="mb-2">

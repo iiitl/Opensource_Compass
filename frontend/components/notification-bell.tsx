@@ -4,6 +4,7 @@ import { useNotifications } from "@/contexts/notification-context";
 import { Bell } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { TimeAgo } from "@/components/ui/time-ago";
 
 export function NotificationBell() {
   const { notifications, unreadCount, markAllAsRead, isConnected } = useNotifications();
@@ -57,9 +58,9 @@ export function NotificationBell() {
                   {notifications.map((n, i) => (
                     <div key={i} className="p-3 hover:bg-[#0d1117] transition-colors">
                       <div className="flex justify-between items-start mb-1">
-                        <span className="textxs font-medium text-[#c9d1d9]">{n.repo}</span>
+                        <span className="text-xs font-medium text-[#c9d1d9]">{n.repo}</span>
                         <span className="text-[10px] text-[#8b949e]">
-                            {new Date(n.timestamp).toLocaleTimeString()}
+                            <TimeAgo date={n.timestamp} />
                         </span>
                       </div>
                       <p className="text-sm text-[#8b949e]">{n.message}</p>
