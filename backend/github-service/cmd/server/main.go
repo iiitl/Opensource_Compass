@@ -57,8 +57,6 @@ func main() {
 	_ = godotenv.Load() // Fallback to local .env
 	token := os.Getenv("GITHUB_TOKEN")
 
-	log.Println("HELLO")
-
 	if token == "" {
 		log.Fatal("GITHUB_TOKEN not set in environment")
 	}
