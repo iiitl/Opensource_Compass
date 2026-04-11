@@ -5,6 +5,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"github-service/internal/repos"
+	"time"
+
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -32,11 +35,29 @@ func corsMiddleware() gin.HandlerFunc {
 	}
 }
 
+var cache *repos.RepoCache
+
+func init() {
+	// Initialize cache with 5-minute TTL
+	cache = repos.NewRepoCache(5 * time.Minute)
+
+	// Start background cleanup goroutine
+	go func() {
+		ticker := time.NewTicker(10 * time.Minute)
+		defer ticker.Stop()
+		for range ticker.C {
+			cache.Clean()
+		}
+	}()
+}
+
 func main() {
 	// Load the root .env file from the project root (optional, for local dev)
 	_ = godotenv.Load("../../.env")
 	_ = godotenv.Load() // Fallback to local .env
 	token := os.Getenv("GITHUB_TOKEN")
+
+	log.Println("HELLO")
 
 	if token == "" {
 		log.Fatal("GITHUB_TOKEN not set in environment")
