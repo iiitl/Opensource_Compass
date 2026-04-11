@@ -255,7 +255,7 @@ function Watchlist() {
   }, [token]);
 
   if (loading) return <div className="text-sm text-[#8b949e]">Loading watchlist...</div>;
-  if (repos.length === 0) return <div className="text-sm text-[#8b949e]">You are not watching any repositories.</div>;
+  if (!repos || repos.length === 0) return <div className="text-sm text-[#8b949e]">You are not watching any repositories.</div>;
 
   return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
