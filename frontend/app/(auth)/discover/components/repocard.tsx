@@ -1,4 +1,5 @@
 import { Star, Clock, GitFork, ExternalLink, Settings } from "lucide-react";
+import { TimeAgo } from "@/components/ui/time-ago";
 import { Button } from "@/components/ui/button";
 import { Repository } from "@/lib/api/github-service";
 import Link from "next/link";
@@ -31,19 +32,6 @@ export default function RepoCard({ repo }: RepoCardProps) {
     return count.toString();
   };
 
-  const timeSinceUpdate = (dateString: string | undefined): string => {
-    if (!dateString) return "Unknown";
-
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-
-    if (diffInDays === 0) return "Today";
-    if (diffInDays === 1) return "Yesterday";
-    if (diffInDays < 7) return `${diffInDays} days ago`;
-    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
-    return `${Math.floor(diffInDays / 30)} months ago`;
-  };
 
   const isRecentlyActive = (dateString: string | undefined): boolean => {
     if (!dateString) return false;
@@ -100,7 +88,7 @@ export default function RepoCard({ repo }: RepoCardProps) {
             </div>
             <div className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
-              <span className="text-xs">{timeSinceUpdate(repo.updated_at)}</span>
+              <span className="text-xs">{repo.updated_at ? <TimeAgo date={repo.updated_at} /> : "Unknown"}</span>
             </div>
           </div>
         </div>
