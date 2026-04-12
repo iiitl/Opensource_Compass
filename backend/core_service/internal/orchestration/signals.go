@@ -23,7 +23,10 @@ func (s *Service) BuildRepoSignals(
 	if err != nil {
 		return signals
 	}
-	signals.TechStackMatchPct = 70
+	
+	userLangs := ExtractLanguages(userCtx)
+	userDomains := ExtractDomains(userCtx)
+	signals.TechStackMatchPct = ComputeTechMatch(userLangs, userDomains, repoData.Language, repoData.Topics)
 
 	updatedTime, _ := time.Parse(time.RFC3339, repoData.LastPushedAt)
 	if time.Since(updatedTime).Hours() < 24*30 {
