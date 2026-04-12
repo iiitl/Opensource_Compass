@@ -274,7 +274,12 @@ function Watchlist() {
                 </div>
               </div>
               <div className="shrink-0">
-                <WatchButton owner={repo.repo_owner} name={repo.repo_name} />
+                <WatchButton 
+                  owner={repo.repo_owner} 
+                  name={repo.repo_name}
+                  initialIsWatched={true}
+                  onUnwatch={() => setRepos(prev => prev.filter(r => r.id !== repo.id))}
+                />
               </div>
             </div>
           </div>
