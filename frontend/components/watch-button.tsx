@@ -9,21 +9,28 @@ import { toast } from "sonner";
 interface WatchButtonProps {
   owner: string;
   name: string;
+  initialIsWatched?: boolean;
+  onUnwatch?: () => void;
 }
 
-export function WatchButton({ owner, name }: WatchButtonProps) {
+export function WatchButton({ owner, name, initialIsWatched, onUnwatch }: WatchButtonProps) {
   const { token } = useAuth();
-  const [isWatched, setIsWatched] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isWatched, setIsWatched] = useState(initialIsWatched ?? false);
+  const [loading, setLoading] = useState(initialIsWatched === undefined);
 
   useEffect(() => {
+    // Skip the API call if the parent gave us the initial state
+    if (initialIsWatched !== undefined) {
+      setLoading(false);
+      return;
+    }
     if (token) {
       checkIsWatched(token, owner, name)
         .then(setIsWatched)
         .catch(() => setIsWatched(false))
         .finally(() => setLoading(false));
     }
-  }, [token, owner, name]);
+  }, [token, owner, name, initialIsWatched]);
 
   const toggleWatch = async () => {
     if (!token) return;
@@ -34,6 +41,7 @@ export function WatchButton({ owner, name }: WatchButtonProps) {
         await removeFromWatchlist(token, owner, name);
         setIsWatched(false);
         toast.success("Removed from watchlist");
+        onUnwatch?.();
       } else {
         await addToWatchlist(token, owner, name);
         setIsWatched(true);
