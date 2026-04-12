@@ -1,7 +1,7 @@
 "use client";
-
-import { X, Settings } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Settings } from "lucide-react";
+// import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 interface ActiveFiltersProps {
   languages: string[];
@@ -10,7 +10,7 @@ interface ActiveFiltersProps {
 }
 
 export default function ActiveFilters({ languages, topics, experienceLevel }: ActiveFiltersProps) {
-  const router = useRouter();
+  // const router = useRouter();
 
   if (languages.length === 0 && topics.length === 0) {
     return null;
@@ -55,13 +55,13 @@ export default function ActiveFilters({ languages, topics, experienceLevel }: Ac
           </div>
         </div>
 
-        <button
-          onClick={() => router.push('/onboarding')}
+        <Link
+          href="/settings"
           className="flex items-center gap-2 px-3 py-1.5 text-sm text-[#8b949e] hover:text-white transition-colors"
         >
           <Settings className="h-4 w-4" />
           Edit
-        </button>
+        </Link>
       </div>
     </div>
   );
