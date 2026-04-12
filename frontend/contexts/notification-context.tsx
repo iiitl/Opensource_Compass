@@ -14,19 +14,22 @@ type Notification = {
   message: string;
   timestamp: Date;
   id: string; // Unique identifier for each notification
+  isRead: boolean;
 };
 
 type NotificationContextType = {
   notifications: Notification[];
   unreadCount: number;
-  markAllAsRead: () => void;
+  markAllAsSeen: () => void;
+  clearAll: () => void;
   isConnected: boolean;
 };
 
 const NotificationContext = createContext<NotificationContextType>({
   notifications: [],
   unreadCount: 0,
-  markAllAsRead: () => {},
+  markAllAsSeen: () => {},
+  clearAll: () => {},
   isConnected: false,
 });
 
@@ -41,6 +44,7 @@ function loadNotificationsFromStorage(): Notification[] {
     return parsed.map((n: any) => ({
       ...n,
       timestamp: new Date(n.timestamp),
+      isRead: n.isRead ?? false,
     }));
   } catch (err) {
     console.error("Failed to load notifications from storage", err);
@@ -112,6 +116,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             ...data,
             timestamp: new Date(),
             id: `${data.repo}-${data.issue_number}-${Date.now()}`,
+            isRead: false,
           };
 
           setNotifications((prev) => {
@@ -179,7 +184,15 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
-  const markAllAsRead = () => {
+  const markAllAsSeen = () => {
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, isRead: true }));
+      saveNotificationsToStorage(updated);
+      return updated;
+    });
+  };
+
+  const clearAll = () => {
     setNotifications([]);
     saveNotificationsToStorage([]);
   };
@@ -188,8 +201,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     <NotificationContext.Provider
       value={{
         notifications,
-        unreadCount: notifications.length,
-        markAllAsRead,
+        unreadCount: notifications.filter(n => !n.isRead).length,
+        markAllAsSeen,
+        clearAll,
         isConnected,
       }}
     >
