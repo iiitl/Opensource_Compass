@@ -7,7 +7,7 @@ import PageWrapper from "@/components/ui/page-wrapper";
 import { TimeAgo } from "@/components/ui/time-ago";
 
 export default function NotificationsPage() {
-  const { notifications, unreadCount, markAllAsRead, isConnected } = useNotifications();
+  const { notifications, unreadCount, markAllAsSeen, clearAll, isConnected } = useNotifications();
 
 
   return (
@@ -33,7 +33,7 @@ export default function NotificationsPage() {
           
           {notifications.length > 0 && (
             <button
-              onClick={markAllAsRead}
+              onClick={clearAll}
               className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors"
             >
               <Trash2 className="w-4 h-4" />
@@ -56,12 +56,13 @@ export default function NotificationsPage() {
             {notifications.map((notification) => (
               <div
                 key={notification.id}
-                className="bg-[#161b22]/60 backdrop-blur-md border border-[#30363d] rounded-lg p-4 hover:border-blue-500/50 transition-colors"
+                className={`bg-[#161b22]/60 backdrop-blur-md border border-[#30363d] rounded-lg p-4 hover:border-blue-500/50 transition-colors ${!notification.isRead ? 'border-l-2 border-l-[#2f81f7]' : ''}`}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <Bell className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      {!notification.isRead && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#2f81f7] mr-1" />}
                       <span className="text-sm font-semibold text-blue-400">
                         {notification.repo}
                       </span>
