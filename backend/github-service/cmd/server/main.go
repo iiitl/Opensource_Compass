@@ -1,11 +1,15 @@
 package main
 
 import (
-	"github-service/routes"
 	"log"
 	"net/http"
 	"os"
+	"crypto/rand"
+	"context"
+	"fmt"
+
 	"github-service/internal/repos"
+	"github-service/routes"
 	"time"
 
 
@@ -31,6 +35,28 @@ func corsMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		c.Next()
+	}
+}
+
+// requestIDMiddleware adds an X-Request-ID header to every request.
+func requestIDMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		reqID := c.GetHeader("X-Request-ID")
+		if reqID == "" {
+			b := make([]byte, 16)
+			rand.Read(b)
+			reqID = fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+		}
+		
+		c.Set("request_id", reqID)
+		
+		// For standard context propagation
+		type contextKey string
+		ctx := context.WithValue(c.Request.Context(), contextKey("request_id"), reqID)
+		c.Request = c.Request.WithContext(ctx)
+
+		c.Header("X-Request-ID", reqID)
 		c.Next()
 	}
 }
@@ -67,6 +93,7 @@ func main() {
 
 	// Apply CORS middleware so browser preflight OPTIONS requests are handled
 	r.Use(corsMiddleware())
+	r.Use(requestIDMiddleware())
 
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
